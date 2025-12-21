@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Reset tối thiểu để không bị template Vite canh giữa + màu nền lạ */
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
