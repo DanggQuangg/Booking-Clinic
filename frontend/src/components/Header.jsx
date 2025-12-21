@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
@@ -18,6 +18,7 @@ const NAV = [
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
@@ -52,8 +53,16 @@ export default function Header() {
     setMobileOpen(false);
   };
 
+  const doLogout = () => {
+    logout();
+    setUserOpen(false);
+    setMobileOpen(false);
+    navigate("/");
+  };
+
   const linkBase =
     "px-3 py-2 rounded-lg font-semibold text-[15px] text-slate-700 hover:text-sky-700 hover:bg-sky-50 transition";
+
   const linkActive = "text-sky-700 bg-sky-50";
 
   return (
@@ -120,19 +129,47 @@ export default function Header() {
                 </button>
 
                 {userOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border bg-white shadow-lg p-2">
-                    <div className="px-3 py-2">
-                      <div className="text-sm font-bold text-slate-800">{user.fullName}</div>
+                  <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl border bg-white shadow-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b">
+                      <div className="text-sm font-extrabold text-slate-800">{user.fullName}</div>
                       <div className="text-xs text-slate-500">{user.phone}</div>
                       {user.email ? <div className="text-xs text-slate-500">{user.email}</div> : null}
                     </div>
-                    <div className="h-px bg-slate-100 my-1" />
+
+                    <NavLink
+                      to="/account/appointments"
+                      className="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={() => setUserOpen(false)}
+                    >
+                      Lịch khám
+                    </NavLink>
+                    <NavLink
+                      to="/account/payments"
+                      className="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={() => setUserOpen(false)}
+                    >
+                      Lịch sử thanh toán
+                    </NavLink>
+                    <NavLink
+                      to="/account/profile"
+                      className="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={() => setUserOpen(false)}
+                    >
+                      Hồ sơ
+                    </NavLink>
+                    <NavLink
+                      to="/account/settings"
+                      className="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={() => setUserOpen(false)}
+                    >
+                      Tài khoản
+                    </NavLink>
+
+                    <div className="h-px bg-slate-100" />
+
                     <button
-                      className="w-full text-left rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
-                      onClick={() => {
-                        logout();
-                        setUserOpen(false);
-                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50"
+                      onClick={doLogout}
                       type="button"
                     >
                       Đăng xuất
@@ -218,20 +255,61 @@ export default function Header() {
                 </div>
               ) : (
                 <div className="px-2 pb-2">
-                  <div className="rounded-xl border p-3">
-                    <div className="font-bold text-slate-800">{user.fullName}</div>
+                  <div className="rounded-2xl border bg-white p-3">
+                    <div className="font-extrabold text-slate-800">{user.fullName}</div>
                     <div className="text-sm text-slate-500">{user.phone}</div>
                     {user.email ? <div className="text-sm text-slate-500">{user.email}</div> : null}
-                    <button
-                      className="mt-3 w-full rounded-lg bg-red-50 text-red-700 font-semibold py-2"
-                      onClick={() => {
-                        logout();
-                        setMobileOpen(false);
-                      }}
-                      type="button"
-                    >
-                      Đăng xuất
-                    </button>
+
+                    <div className="mt-3 grid gap-2">
+                      <button
+                        className="w-full rounded-lg border px-3 py-2 text-left font-semibold hover:bg-slate-50"
+                        onClick={() => {
+                          navigate("/account/appointments");
+                          setMobileOpen(false);
+                        }}
+                        type="button"
+                      >
+                        Lịch khám
+                      </button>
+                      <button
+                        className="w-full rounded-lg border px-3 py-2 text-left font-semibold hover:bg-slate-50"
+                        onClick={() => {
+                          navigate("/account/payments");
+                          setMobileOpen(false);
+                        }}
+                        type="button"
+                      >
+                        Lịch sử thanh toán
+                      </button>
+                      <button
+                        className="w-full rounded-lg border px-3 py-2 text-left font-semibold hover:bg-slate-50"
+                        onClick={() => {
+                          navigate("/account/profile");
+                          setMobileOpen(false);
+                        }}
+                        type="button"
+                      >
+                        Hồ sơ
+                      </button>
+                      <button
+                        className="w-full rounded-lg border px-3 py-2 text-left font-semibold hover:bg-slate-50"
+                        onClick={() => {
+                          navigate("/account/settings");
+                          setMobileOpen(false);
+                        }}
+                        type="button"
+                      >
+                        Tài khoản
+                      </button>
+
+                      <button
+                        className="w-full rounded-lg bg-red-50 text-red-700 font-bold py-2"
+                        onClick={doLogout}
+                        type="button"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -288,7 +366,7 @@ export default function Header() {
   );
 }
 
-/* Icons ... (giữ nguyên phần icons của bạn) */
+/* Icons */
 function MenuIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
