@@ -1,43 +1,31 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.DoctorPublicDto;
-import com.example.backend.dto.SpecialtyDto;
-import com.example.backend.entity.SlotStatus;
 import com.example.backend.entity.UserRole;
 import com.example.backend.entity.UserStatus;
 import com.example.backend.repository.DoctorCatalogRepository;
-import com.example.backend.repository.SpecialtyRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PublicCatalogService {
 
-    private final SpecialtyRepository specialtyRepo;
-    private final DoctorCatalogRepository doctorCatalogRepo;
+    private final DoctorCatalogRepository doctorCatalogRepository;
 
-    public PublicCatalogService(SpecialtyRepository specialtyRepo,
-                                DoctorCatalogRepository doctorCatalogRepo) {
-        this.specialtyRepo = specialtyRepo;
-        this.doctorCatalogRepo = doctorCatalogRepo;
-    }
+    public List<DoctorPublicDto> getDoctors(Long specialtyId, LocalDate date) {
+        // Nếu không chọn ngày, mặc định lấy ngày hiện tại
+        LocalDate searchDate = (date != null) ? date : LocalDate.now();
 
-    public List<SpecialtyDto> listSpecialties() {
-        return specialtyRepo.findAll().stream()
-                .map(s -> new SpecialtyDto(s.getId(), s.getName(), s.getDescription(), s.getImageUrl()))
-                .toList();
-    }
-
-    public List<DoctorPublicDto> listAvailableDoctors(Long specialtyId, LocalDate date) {
-        int dayOfWeek = date.getDayOfWeek().getValue(); // Mon=1..Sun=7
-        return doctorCatalogRepo.findAvailableDoctors(
+        return doctorCatalogRepository.findAvailableDoctors(
                 specialtyId,
-                dayOfWeek,
+                searchDate,
                 UserRole.DOCTOR,
                 UserStatus.ACTIVE,
-                SlotStatus.ACTIVE
+                "ACTIVE" // Truyền String status
         );
     }
 }

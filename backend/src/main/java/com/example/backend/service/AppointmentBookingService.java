@@ -5,7 +5,6 @@ import com.example.backend.entity.*;
 import com.example.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 
 @Service
@@ -16,77 +15,81 @@ public class AppointmentBookingService {
     private final DoctorProfileRepository doctorProfileRepo;
     private final DoctorSpecialtyRepository doctorSpecialtyRepo;
     private final AppointmentRepository appointmentRepo;
+    private final ClinicRoomRepository clinicRoomRepo; // Thêm repo này
 
     public AppointmentBookingService(
             PatientProfileRepository patientProfileRepo,
             DoctorWeeklyTimeSlotRepository slotRepo,
             DoctorProfileRepository doctorProfileRepo,
             DoctorSpecialtyRepository doctorSpecialtyRepo,
-            AppointmentRepository appointmentRepo
+            AppointmentRepository appointmentRepo,
+            ClinicRoomRepository clinicRoomRepo
     ) {
         this.patientProfileRepo = patientProfileRepo;
         this.slotRepo = slotRepo;
         this.doctorProfileRepo = doctorProfileRepo;
         this.doctorSpecialtyRepo = doctorSpecialtyRepo;
         this.appointmentRepo = appointmentRepo;
+        this.clinicRoomRepo = clinicRoomRepo;
     }
 
     @Transactional
     public Appointment book(Long patientUserId, BookAppointmentRequest req) {
-
-        // 1) Profile phải thuộc user đang login
+        // 1. Check Profile
         PatientProfile profile = patientProfileRepo.findByIdAndOwnerUser_Id(req.patientProfileId(), patientUserId)
                 .orElseThrow(() -> new RuntimeException("Hồ sơ không thuộc tài khoản."));
 
-        // 2) Slot tồn tại + ACTIVE + thuộc doctor
+        // 2. Check Slot
         DoctorWeeklyTimeSlot slot = slotRepo.findById(req.slotId())
                 .orElseThrow(() -> new RuntimeException("Slot không tồn tại."));
 
-        if (slot.getStatus() != SlotStatus.ACTIVE) {
+        if (!"ACTIVE".equals(slot.getStatus())) {
             throw new RuntimeException("Slot đang INACTIVE.");
         }
-        if (!slot.getDoctor().getId().equals(req.doctorId())) {
+
+        // 3. Check Doctor (Lấy ID từ WorkShift)
+        Long slotDoctorId = slot.getDoctorWorkShift().getDoctorId();
+        if (!slotDoctorId.equals(req.doctorId())) {
             throw new RuntimeException("Slot không thuộc bác sĩ đã chọn.");
         }
 
-        // 3) Check đúng thứ của ngày khám
-        int dow = req.appointmentDate().getDayOfWeek().getValue(); // Mon=1..Sun=7
-        if (!slot.getDayOfWeek().equals(dow)) {
-            throw new RuntimeException("Ngày khám không khớp thứ của slot.");
+        // 4. Check Ngày (Lấy Date từ WorkShift)
+        if (!slot.getDoctorWorkShift().getWorkDate().equals(req.appointmentDate())) {
+            throw new RuntimeException("Ngày khám không khớp với ngày của ca làm việc.");
         }
 
-        // 4) Check doctor thuộc specialty (DB cũng có trigger, nhưng check ở code để báo lỗi đẹp)
+        // 5. Check chuyên khoa
         boolean ok = doctorSpecialtyRepo.existsByDoctor_IdAndSpecialty_Id(req.doctorId(), req.specialtyId());
         if (!ok) throw new RuntimeException("Bác sĩ không thuộc chuyên khoa đã chọn.");
 
-        // 5) Check capacity
+        // 6. Check slot đầy
         long booked = appointmentRepo.countBooked(req.doctorId(), req.slotId(), req.appointmentDate());
-        int remaining = slot.getCapacity() - (int) booked;
-        if (remaining <= 0) throw new RuntimeException("Slot đã đầy.");
+        if (slot.getCapacity() - (int) booked <= 0) {
+            throw new RuntimeException("Slot đã đầy.");
+        }
 
-        // 6) Base fee từ doctor profile
-        BigDecimal baseFee = doctorProfileRepo.findConsultationFeeByUserId(req.doctorId())
-                .orElse(BigDecimal.ZERO);
+        // 7. Lấy giá khám
+        BigDecimal baseFee = doctorProfileRepo.findConsultationFeeByUserId(req.doctorId()).orElse(BigDecimal.ZERO);
 
-        // 7) Insurance rules
+        // 8. Tính BHYT
         boolean insuranceUsed = Boolean.TRUE.equals(req.insuranceUsed());
-        BigDecimal discount = req.insuranceDiscount() == null ? BigDecimal.ZERO : req.insuranceDiscount();
-        if (!insuranceUsed) discount = BigDecimal.ZERO;
-
-        BigDecimal maxDiscount = baseFee.multiply(new BigDecimal("0.80"));
-        if (discount.compareTo(maxDiscount) > 0) {
+        BigDecimal discount = (insuranceUsed && req.insuranceDiscount() != null) ? req.insuranceDiscount() : BigDecimal.ZERO;
+        if (discount.compareTo(baseFee.multiply(new BigDecimal("0.8"))) > 0) {
             throw new RuntimeException("Giảm BHYT vượt quá 80% phí khám.");
         }
 
-        // 8) Create appointment
+        // 9. Lấy Phòng khám từ DB (thay vì slot.getRoom())
+        ClinicRoom room = clinicRoomRepo.findById(slot.getDoctorWorkShift().getRoomId())
+                .orElseThrow(() -> new RuntimeException("Phòng khám không tồn tại."));
+
+        // 10. Tạo Appointment
         Appointment appt = Appointment.builder()
                 .patientUser(profile.getOwnerUser())
-                .patientProfileId(profile.getId())   // ✅ quan trọng: set field lưu DB
-                // patientProfile là read-only, set hay không không quan trọng
-                .specialty(Specialty.builder().id(req.specialtyId()).build())
+                .patientProfileId(profile.getId())
+                .specialty(new Specialty(req.specialtyId(), null, null, null))
                 .doctor(User.builder().id(req.doctorId()).build())
                 .slot(slot)
-                .room(slot.getRoom())
+                .room(room) // Gán phòng vừa tìm được
                 .appointmentDate(req.appointmentDate())
                 .status(AppointmentStatus.AWAITING_PAYMENT)
                 .paymentStatus(AppointmentPaymentStatus.UNPAID)
@@ -97,7 +100,6 @@ public class AppointmentBookingService {
                 .totalAmount(baseFee.subtract(discount))
                 .note(req.note())
                 .build();
-
 
         return appointmentRepo.save(appt);
     }

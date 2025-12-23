@@ -1,15 +1,12 @@
 package com.example.backend.repository;
 
 import com.example.backend.entity.DoctorWeeklyTimeSlot;
-import com.example.backend.entity.SlotStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.stereotype.Repository;
 import java.util.List;
 
+@Repository
 public interface DoctorWeeklyTimeSlotRepository extends JpaRepository<DoctorWeeklyTimeSlot, Long> {
-    List<DoctorWeeklyTimeSlot> findByDoctor_IdAndDayOfWeekAndStatusOrderByStartTimeAsc(
-            Long doctorId, Integer dayOfWeek, SlotStatus status
-    );
-    List<DoctorWeeklyTimeSlot> findAllByDoctor_IdOrderByDayOfWeekAscStartTimeAsc(Long doctorId);
-
+    // Spring tự động JOIN bảng doctorWorkShift để tìm theo doctorId
+    List<DoctorWeeklyTimeSlot> findAllByDoctorWorkShift_DoctorIdOrderByDoctorWorkShift_WorkDateAscStartTimeAsc(Long doctorId);
 }
