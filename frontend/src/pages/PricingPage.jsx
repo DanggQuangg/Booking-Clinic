@@ -7,7 +7,7 @@ function formatVND(value) {
 }
 
 export default function PricingPage() {
-  const [mode, setMode] = useState("SPECIALTY"); // "SPECIALTY" | "SERVICE"
+  const [mode, setMode] = useState("SPECIALTY"); 
   const [q, setQ] = useState("");
 
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import { apiGet } from "../lib/api"; // <-- thêm dòng này
 
 function useQuery() {
   const { search } = useLocation();
@@ -9,7 +10,7 @@ function useQuery() {
 
 export default function InvoicePage() {
   const q = useQuery();
-  const appointmentId = q.get("appointmentId");
+  const appointmentId = q.get("appointmentId") || q.get("appointmentIdd");
   const navigate = useNavigate();
 
   const [data, setData] = useState(null);
@@ -22,19 +23,23 @@ export default function InvoicePage() {
       setError("Thiếu appointmentId.");
       return;
     }
+
     const run = async () => {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch(`/api/patient/invoice?appointmentId=${appointmentId}`);
-        if (!res.ok) throw new Error("Không tải được hóa đơn.");
-        setData(await res.json());
+
+        // ✅ dùng apiGet để tự gắn Bearer token
+        const json = await apiGet(`/api/patient/invoice?appointmentId=${appointmentId}`);
+        setData(json);
       } catch (e) {
-        setError(e?.message || "Lỗi không xác định");
+        // apiGet đã throw message đẹp (nếu bạn giữ phần parse error)
+        setError(e?.message || "Không tải được hóa đơn.");
       } finally {
         setLoading(false);
       }
     };
+
     run();
   }, [appointmentId]);
 

@@ -121,7 +121,8 @@ export default function BookStep2DateDoctor() {
           ) : doctors.length === 0 ? (
             <div className="rounded-xl border bg-white p-4 text-slate-700">
               Không có bác sĩ khả dụng cho ngày <b>{date}</b>.<br />
-              Hãy kiểm tra bảng <b>doctor_weekly_time_slots</b> (ACTIVE) đúng thứ của ngày này.
+              Hãy kiểm tra dữ liệu <b>doctor_work_shifts</b> (status != CANCELLED) của ngày này,
+              và các slot sinh ra trong <b>appointment_slots</b> (status = ACTIVE).
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
