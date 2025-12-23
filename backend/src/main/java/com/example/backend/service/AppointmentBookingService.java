@@ -5,7 +5,6 @@ import com.example.backend.entity.*;
 import com.example.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -17,19 +16,22 @@ public class AppointmentBookingService {
     private final DoctorProfileRepository doctorProfileRepo;
     private final DoctorSpecialtyRepository doctorSpecialtyRepo;
     private final AppointmentRepository appointmentRepo;
+    private final ClinicRoomRepository clinicRoomRepo; // Thêm repo này
 
     public AppointmentBookingService(
             PatientProfileRepository patientProfileRepo,
             AppointmentSlotRepository appointmentSlotRepo,
             DoctorProfileRepository doctorProfileRepo,
             DoctorSpecialtyRepository doctorSpecialtyRepo,
-            AppointmentRepository appointmentRepo
+            AppointmentRepository appointmentRepo,
+            ClinicRoomRepository clinicRoomRepo
     ) {
         this.patientProfileRepo = patientProfileRepo;
         this.appointmentSlotRepo = appointmentSlotRepo;
         this.doctorProfileRepo = doctorProfileRepo;
         this.doctorSpecialtyRepo = doctorSpecialtyRepo;
         this.appointmentRepo = appointmentRepo;
+        this.clinicRoomRepo = clinicRoomRepo;
     }
 
     @Transactional
@@ -44,7 +46,7 @@ public class AppointmentBookingService {
         AppointmentSlot slot = appointmentSlotRepo.findById(req.slotId())
                 .orElseThrow(() -> new RuntimeException("Slot không tồn tại."));
 
-        if (slot.getStatus() != SlotStatus.ACTIVE) {
+        if (!"ACTIVE".equals(slot.getStatus())) {
             throw new RuntimeException("Slot đang INACTIVE.");
         }
 
@@ -87,11 +89,8 @@ public class AppointmentBookingService {
 
         // 9) Insurance rules
         boolean insuranceUsed = Boolean.TRUE.equals(req.insuranceUsed());
-        BigDecimal discount = req.insuranceDiscount() == null ? BigDecimal.ZERO : req.insuranceDiscount();
-        if (!insuranceUsed) discount = BigDecimal.ZERO;
-
-        BigDecimal maxDiscount = baseFee.multiply(new BigDecimal("0.80"));
-        if (discount.compareTo(maxDiscount) > 0) {
+        BigDecimal discount = (insuranceUsed && req.insuranceDiscount() != null) ? req.insuranceDiscount() : BigDecimal.ZERO;
+        if (discount.compareTo(baseFee.multiply(new BigDecimal("0.8"))) > 0) {
             throw new RuntimeException("Giảm BHYT vượt quá 80% phí khám.");
         }
 
