@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiGet } from "../../api/api";
+import { apiGet } from "../../lib/api";
 
 const TABS = [
   { key: "UPCOMING", label: "Lịch hẹn khám" },

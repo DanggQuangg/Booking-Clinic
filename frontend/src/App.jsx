@@ -14,7 +14,8 @@ import InvoicePage from "./pages/InvoicePage";
 import DoctorsPage from "./pages/DoctorsPage";
 import DoctorDetailPage from "./pages/DoctorDetailPage";
 import PricingPage from "./pages/PricingPage";
-
+import ServicesPage from "./pages/ServicesPage";
+import ServiceBookingPage from "./pages/ServiceBookingPage";
 export default function App() {
   return (
     <Routes>
@@ -29,6 +30,9 @@ export default function App() {
       <Route path="/book/step4" element={<BookStep4ProfileConfirm />} />
       <Route path="/book/invoice" element={<InvoicePage />} />
       <Route path="/pricing" element={<PricingPage />} />
+
+      <Route path="/services" element={<ServicesPage />} />
+      <Route path="/services/:id" element={<ServiceBookingPage />} />
       {/* Account area */}
       <Route
         path="/account"

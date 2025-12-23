@@ -28,12 +28,17 @@ export default function BookStep4ProfileConfirm() {
   const [creating, setCreating] = useState(false);
   const [createErr, setCreateErr] = useState("");
 
+  // ✅ mở rộng theo patient_profiles (SQL)
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
     dob: "",
     gender: "MALE",
-    isDefault: false
+    citizenId: "",
+    healthInsuranceCode: "",
+    address: "",
+    ethnicity: "",
+    isDefault: false,
   });
 
   const loadProfiles = async () => {
@@ -44,7 +49,7 @@ export default function BookStep4ProfileConfirm() {
     setProfiles(arr);
 
     const def = arr.find((x) => x.isDefault);
-    setSelectedProfileId(def ? def.id : (arr[0]?.id ?? null));
+    setSelectedProfileId(def ? def.id : arr[0]?.id ?? null);
   };
 
   useEffect(() => {
@@ -65,6 +70,7 @@ export default function BookStep4ProfileConfirm() {
         setLoading(false);
       }
     };
+
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialtyId, date, doctorId, slotId]);
@@ -87,13 +93,12 @@ export default function BookStep4ProfileConfirm() {
         appointmentDate: date,
         insuranceUsed: false,
         insuranceDiscount: null,
-        note: ""
+        note: "",
       };
 
       const res = await http.post("/api/patient/appointments", body);
       const data = res.data;
       navigate(`/book/invoice?appointmentId=${data.appointmentId}`);
-
     } catch (e) {
       setError(e?.response?.data?.message || e?.message || "Lỗi không xác định");
     } finally {
@@ -103,7 +108,17 @@ export default function BookStep4ProfileConfirm() {
 
   const openCreateModal = () => {
     setCreateErr("");
-    setForm({ fullName: "", phone: "", dob: "", gender: "MALE", isDefault: false });
+    setForm({
+      fullName: "",
+      phone: "",
+      dob: "",
+      gender: "MALE",
+      citizenId: "",
+      healthInsuranceCode: "",
+      address: "",
+      ethnicity: "",
+      isDefault: false,
+    });
     setShowCreate(true);
   };
 
@@ -117,19 +132,24 @@ export default function BookStep4ProfileConfirm() {
       setCreating(true);
       setCreateErr("");
 
+      // ✅ payload mở rộng (cần backend hỗ trợ thêm field — xem phần 2)
       const payload = {
         fullName: form.fullName.trim(),
         phone: form.phone.trim() || null,
         dob: form.dob || null,
         gender: form.gender || null,
-        isDefault: !!form.isDefault
+
+        citizenId: form.citizenId.trim() || null,
+        healthInsuranceCode: form.healthInsuranceCode.trim() || null,
+        address: form.address.trim() || null,
+        ethnicity: form.ethnicity.trim() || null,
+
+        isDefault: !!form.isDefault,
       };
 
       const res = await http.post("/api/patient/profiles", payload);
-    const created = res.data;
+      const created = res.data;
 
-
-      // reload list và tự chọn profile vừa tạo
       await loadProfiles();
       if (created?.id) setSelectedProfileId(created.id);
 
@@ -195,12 +215,22 @@ export default function BookStep4ProfileConfirm() {
                     checked={String(selectedProfileId) === String(p.id)}
                     onChange={() => setSelectedProfileId(p.id)}
                   />
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-extrabold text-slate-900">
-                      {p.fullName} {p.isDefault ? <span className="text-xs text-emerald-700">• Mặc định</span> : null}
+                      {p.fullName}{" "}
+                      {p.isDefault ? <span className="text-xs text-emerald-700">• Mặc định</span> : null}
                     </div>
-                    <div className="text-slate-600 text-sm">
+
+                    <div className="text-slate-600 text-sm mt-1">
                       SĐT: {p.phone || "—"} • DOB: {p.dob || "—"} • Giới tính: {p.gender || "—"}
+                    </div>
+
+                    {/* ✅ hiển thị thêm info theo patient_profiles */}
+                    <div className="text-slate-600 text-sm mt-1">
+                      CCCD: {p.citizenId || "—"} • BHYT: {p.healthInsuranceCode || "—"}
+                    </div>
+                    <div className="text-slate-600 text-sm mt-1">
+                      Dân tộc: {p.ethnicity || "—"} • Địa chỉ: {p.address || "—"}
                     </div>
                   </div>
                 </label>
@@ -209,15 +239,13 @@ export default function BookStep4ProfileConfirm() {
           )}
 
           {error ? (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700 font-semibold">
-              {error}
-            </div>
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700 font-semibold">{error}</div>
           ) : null}
 
           <div className="mt-6 flex justify-end">
             <button
               type="button"
-              disabled={submitting || (!selectedProfileId)}
+              disabled={submitting || !selectedProfileId}
               onClick={onConfirm}
               className="rounded-xl bg-sky-600 text-white px-5 py-3 font-extrabold hover:bg-sky-700 disabled:opacity-50"
             >
@@ -285,6 +313,48 @@ export default function BookStep4ProfileConfirm() {
                       <option value="OTHER">Khác</option>
                     </select>
                   </div>
+                </div>
+
+                {/* ✅ thêm field theo patient_profiles */}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">CCCD</label>
+                    <input
+                      value={form.citizenId}
+                      onChange={(e) => setForm({ ...form, citizenId: e.target.value })}
+                      className="w-full rounded-xl border px-4 py-3 font-semibold outline-none focus:ring-2 focus:ring-emerald-200"
+                      placeholder="012345678901"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Mã BHYT</label>
+                    <input
+                      value={form.healthInsuranceCode}
+                      onChange={(e) => setForm({ ...form, healthInsuranceCode: e.target.value })}
+                      className="w-full rounded-xl border px-4 py-3 font-semibold outline-none focus:ring-2 focus:ring-emerald-200"
+                      placeholder="BHYT..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Dân tộc</label>
+                  <input
+                    value={form.ethnicity}
+                    onChange={(e) => setForm({ ...form, ethnicity: e.target.value })}
+                    className="w-full rounded-xl border px-4 py-3 font-semibold outline-none focus:ring-2 focus:ring-emerald-200"
+                    placeholder="Kinh"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Địa chỉ</label>
+                  <input
+                    value={form.address}
+                    onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    className="w-full rounded-xl border px-4 py-3 font-semibold outline-none focus:ring-2 focus:ring-emerald-200"
+                    placeholder="Số nhà, đường, phường/xã, quận/huyện..."
+                  />
                 </div>
 
                 <label className="flex items-center gap-2 mt-2 text-slate-700 font-semibold">

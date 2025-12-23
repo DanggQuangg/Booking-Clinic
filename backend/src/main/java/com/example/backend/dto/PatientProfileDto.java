@@ -6,5 +6,9 @@ public record PatientProfileDto(
         String phone,
         String dob,
         String gender,
+        String healthInsuranceCode,
+        String citizenId,
+        String address,
+        String ethnicity,
         Boolean isDefault
 ) {}
