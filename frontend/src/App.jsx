@@ -6,12 +6,29 @@ import PaymentsPage from "./pages/account/PaymentsPage";
 import ProfilePage from "./pages/account/ProfilePage";
 import SettingsPage from "./pages/account/SettingsPage";
 import RequireAuth from "./routes/RequireAuth";
+import BookStep1Specialty from "./pages/BookStep1Specialty";
+import BookStep2DateDoctor from "./pages/BookStep2DateDoctor";
+import BookStep3Slot from "./pages/BookStep3Slot";
+import BookStep4ProfileConfirm from "./pages/BookStep4ProfileConfirm";
+import InvoicePage from "./pages/InvoicePage";
+import DoctorsPage from "./pages/DoctorsPage";
+import DoctorDetailPage from "./pages/DoctorDetailPage";
+import PricingPage from "./pages/PricingPage";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
 
+      <Route path="/doctors" element={<DoctorsPage />} />
+      <Route path="/doctors/:id" element={<DoctorDetailPage />} />
+
+      <Route path="/book" element={<BookStep1Specialty />} />
+      <Route path="/book/step2" element={<BookStep2DateDoctor />} />
+      <Route path="/book/step3" element={<BookStep3Slot />} />
+      <Route path="/book/step4" element={<BookStep4ProfileConfirm />} />
+      <Route path="/book/invoice" element={<InvoicePage />} />
+      <Route path="/pricing" element={<PricingPage />} />
       {/* Account area */}
       <Route
         path="/account"
