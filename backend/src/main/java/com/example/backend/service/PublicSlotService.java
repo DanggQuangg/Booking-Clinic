@@ -1,42 +1,50 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.SlotAvailabilityDto;
-import com.example.backend.entity.ClinicRoom;
-import com.example.backend.repository.*;
+import com.example.backend.entity.*;
+import com.example.backend.repository.AppointmentRepository;
+import com.example.backend.repository.AppointmentSlotRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PublicSlotService {
 
-    private final DoctorWeeklyTimeSlotRepository slotRepo;
-    private final AppointmentRepository apptRepo;
-    private final ClinicRoomRepository clinicRoomRepo; // Thêm repo
+    private final AppointmentSlotRepository appointmentSlotRepository;
+    private final AppointmentRepository appointmentRepository;
 
-    public PublicSlotService(DoctorWeeklyTimeSlotRepository slotRepo, AppointmentRepository apptRepo, ClinicRoomRepository clinicRoomRepo) {
-        this.slotRepo = slotRepo;
-        this.apptRepo = apptRepo;
-        this.clinicRoomRepo = clinicRoomRepo;
-    }
+    public List<SlotAvailabilityDto> getDoctorSlots(Long doctorId, LocalDate date) {
 
-    public List<SlotAvailabilityDto> listSlots(Long doctorId, LocalDate date) {
-        // FIX: Lấy list slot bằng hàm mới
-        var allSlots = slotRepo.findAllByDoctorWorkShift_DoctorIdOrderByDoctorWorkShift_WorkDateAscStartTimeAsc(doctorId);
+        List<AppointmentSlot> slots = appointmentSlotRepository.findActiveSlotsByDoctorAndDate(
+                doctorId,
+                date,
+                SlotStatus.ACTIVE,
+                WorkShiftStatus.CANCELLED
+        );
 
-        return allSlots.stream()
-                .filter(s -> s.getDoctorWorkShift().getWorkDate().equals(date)) // Lọc theo ngày
-                .filter(s -> "ACTIVE".equals(s.getStatus()))
-                .map(s -> {
-                    long booked = apptRepo.countBooked(doctorId, s.getId(), date);
-                    int remaining = Math.max(0, s.getCapacity() - (int) booked);
-                    
-                    // Lấy tên phòng
-                    String roomName = clinicRoomRepo.findById(s.getDoctorWorkShift().getRoomId())
-                            .map(ClinicRoom::getRoomName).orElse("N/A");
+        return slots.stream().map(slot -> {
+            DoctorWorkShift ws = slot.getWorkShift();
+            ClinicRoom room = ws.getRoom();
 
-                    return new SlotAvailabilityDto(s.getId(), s.getStartTime().toString(), s.getEndTime().toString(),
-                            s.getDoctorWorkShift().getRoomId(), roomName, s.getCapacity(), remaining);
-                }).toList();
+            // Option A
+            long booked = appointmentRepository.countBooked(slot.getId(), date);
+
+            int capacity = slot.getCapacity() == null ? 0 : slot.getCapacity();
+            int remaining = Math.max(0, capacity - (int) booked);
+
+            return new SlotAvailabilityDto(
+                    slot.getId(),
+                    slot.getStartTime().toString(),
+                    slot.getEndTime().toString(),
+                    room.getId(),
+                    room.getRoomName(),
+                    capacity,
+                    remaining
+            );
+        }).toList();
     }
 }

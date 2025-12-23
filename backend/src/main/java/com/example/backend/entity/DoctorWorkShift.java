@@ -2,31 +2,39 @@ package com.example.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "doctor_work_shifts") // Khớp bảng SQL
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Table(
+        name = "doctor_work_shifts",
+        indexes = {
+                @Index(name = "idx_shift_date", columnList = "work_date, shift"),
+                @Index(name = "idx_shift_doc_date", columnList = "doctor_id, work_date")
+        },
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_doctor_date_shift",
+                columnNames = {"doctor_id", "work_date", "shift"}
+        )
+)
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DoctorWorkShift {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "doctor_id", nullable = false)
-    private Long doctorId; // Lưu ID bác sĩ (User)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id", nullable = false)
+    private User doctor;
 
     @Column(name = "work_date", nullable = false)
-    private LocalDate workDate; // Ngày làm việc cụ thể
+    private LocalDate workDate;
 
-    @Column(name = "shift", nullable = false)
-    private String shift; // "MORNING" hoặc "AFTERNOON"
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shift", nullable = false, length = 20)
+    private ShiftType shift;
 
     @Column(name = "doctor_start_time", nullable = false)
     private LocalTime doctorStartTime;
@@ -34,19 +42,15 @@ public class DoctorWorkShift {
     @Column(name = "doctor_end_time", nullable = false)
     private LocalTime doctorEndTime;
 
-    @Column(name = "room_id", nullable = false)
-    private Long roomId; // ID phòng khám
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = false)
+    private ClinicRoom room;
 
-    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
-    private String status = "REGISTERED"; // "REGISTERED", "APPROVED", "CANCELLED"
+    private WorkShiftStatus status = WorkShiftStatus.REGISTERED;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
-        if (status == null) status = "REGISTERED";
-    }
 }

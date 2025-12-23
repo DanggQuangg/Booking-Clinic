@@ -34,7 +34,7 @@ public class AuthService {
 
         u = userRepo.save(u);
 
-        String token = jwt.generateToken(u.getPhone());
+        String token = jwt.generateToken(String.valueOf(u.getId()));
         return new AuthResponse(u.getFullName(), u.getPhone(), u.getEmail(), token);
     }
 
@@ -46,7 +46,7 @@ public class AuthService {
             throw new RuntimeException("Sai số điện thoại hoặc mật khẩu.");
         }
 
-        String token = jwt.generateToken(u.getPhone());
+        String token = jwt.generateToken(String.valueOf(u.getId()));
         return new AuthResponse(u.getFullName(), u.getPhone(), u.getEmail(), token);
     }
 }

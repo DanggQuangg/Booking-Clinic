@@ -1,26 +1,26 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalTime;
 
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "appointment_slots") // ✅ QUAN TRỌNG: Phải khớp tên bảng trong SQL
+@Table(
+        name = "appointment_slots",
+        indexes = @Index(name = "idx_slot_shift", columnList = "work_shift_id"),
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_shift_time",
+                columnNames = {"work_shift_id", "start_time", "end_time"}
+        )
+)
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class AppointmentSlot {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Liên kết với bảng doctor_work_shifts qua khóa ngoại work_shift_id
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "work_shift_id", nullable = false)
     private DoctorWorkShift workShift;
 
@@ -30,10 +30,12 @@ public class AppointmentSlot {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @Column(nullable = false)
-    private Integer capacity;
+    @Column(name = "capacity", nullable = false)
+    @Builder.Default
+    private Integer capacity = 10;
 
-    // Trong SQL là ENUM('ACTIVE','INACTIVE'), ở đây dùng String cho đơn giản
-    @Column(nullable = false)
-    private String status; 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 10)
+    @Builder.Default
+    private SlotStatus status = SlotStatus.ACTIVE; // bạn đang có enum SlotStatus sẵn
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import { http } from "../api/http";
 
 function useQuery() {
   const { search } = useLocation();
@@ -36,9 +37,9 @@ export default function BookStep4ProfileConfirm() {
   });
 
   const loadProfiles = async () => {
-    const res = await fetch("/api/patient/profiles");
-    if (!res.ok) throw new Error("Không tải được hồ sơ bệnh nhân.");
-    const data = await res.json();
+    const res = await http.get("/api/patient/profiles");
+    const data = res.data;
+
     const arr = Array.isArray(data) ? data : [];
     setProfiles(arr);
 
@@ -59,7 +60,7 @@ export default function BookStep4ProfileConfirm() {
         setError("");
         await loadProfiles();
       } catch (e) {
-        setError(e?.message || "Lỗi không xác định");
+        setError(e?.response?.data?.message || e?.message || "Lỗi không xác định");
       } finally {
         setLoading(false);
       }
@@ -85,25 +86,16 @@ export default function BookStep4ProfileConfirm() {
         slotId: Number(slotId),
         appointmentDate: date,
         insuranceUsed: false,
-        insuranceDiscount: 0,
+        insuranceDiscount: null,
         note: ""
       };
 
-      const res = await fetch("/api/patient/appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || "Đặt lịch thất bại.");
-      }
-
-      const data = await res.json();
+      const res = await http.post("/api/patient/appointments", body);
+      const data = res.data;
       navigate(`/book/invoice?appointmentId=${data.appointmentId}`);
+
     } catch (e) {
-      setError(e?.message || "Lỗi không xác định");
+      setError(e?.response?.data?.message || e?.message || "Lỗi không xác định");
     } finally {
       setSubmitting(false);
     }
@@ -133,18 +125,9 @@ export default function BookStep4ProfileConfirm() {
         isDefault: !!form.isDefault
       };
 
-      const res = await fetch("/api/patient/profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      const res = await http.post("/api/patient/profiles", payload);
+    const created = res.data;
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || "Tạo hồ sơ thất bại.");
-      }
-
-      const created = await res.json();
 
       // reload list và tự chọn profile vừa tạo
       await loadProfiles();
@@ -152,7 +135,7 @@ export default function BookStep4ProfileConfirm() {
 
       setShowCreate(false);
     } catch (e) {
-      setCreateErr(e?.message || "Lỗi không xác định");
+      setCreateErr(e?.response?.data?.message || e?.message || "Lỗi không xác định");
     } finally {
       setCreating(false);
     }

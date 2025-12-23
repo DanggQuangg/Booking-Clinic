@@ -1,23 +1,263 @@
+import { useEffect, useMemo, useState } from "react";
+import { apiGet } from "../../api/api";
+
+const TABS = [
+  { key: "UPCOMING", label: "Lịch hẹn khám" },
+  { key: "REGISTERED", label: "Đã đăng ký" },
+  { key: "DONE", label: "Đã khám" },
+];
+
+function fmtDate(isoDate) {
+  // isoDate: "2025-12-23"
+  if (!isoDate) return "";
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`;
+}
+
+function fmtTime(t) {
+  // "07:30:00" -> "07:30"
+  if (!t) return "";
+  return t.slice(0, 5);
+}
+
+function moneyVND(x) {
+  if (x == null) return "0 ₫";
+  const n = Number(x);
+  if (Number.isNaN(n)) return `${x} ₫`;
+  return n.toLocaleString("vi-VN") + " ₫";
+}
+
+function Badge({ children, tone = "slate" }) {
+  const cls =
+    tone === "green"
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : tone === "yellow"
+      ? "bg-amber-50 text-amber-700 border-amber-200"
+      : tone === "red"
+      ? "bg-rose-50 text-rose-700 border-rose-200"
+      : "bg-slate-50 text-slate-700 border-slate-200";
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${cls}`}>
+      {children}
+    </span>
+  );
+}
+
+function statusBadge(status, paymentStatus) {
+  // status: AWAITING_PAYMENT | CONFIRMED | DONE | CANCELLED | NO_SHOW...
+  if (status === "DONE") return <Badge tone="green">Đã khám</Badge>;
+  if (status === "CONFIRMED") return <Badge tone="green">Đã xác nhận</Badge>;
+  if (status === "AWAITING_PAYMENT") return <Badge tone="yellow">Chờ thanh toán</Badge>;
+  if (status === "CANCELLED") return <Badge tone="red">Đã huỷ</Badge>;
+  if (status === "NO_SHOW") return <Badge tone="red">Vắng mặt</Badge>;
+  // fallback
+  return <Badge>{status || "UNKNOWN"}</Badge>;
+}
+
+function payBadge(paymentStatus) {
+  if (paymentStatus === "PAID") return <Badge tone="green">Đã thanh toán</Badge>;
+  if (paymentStatus === "UNPAID") return <Badge tone="yellow">Chưa thanh toán</Badge>;
+  if (paymentStatus === "FAILED") return <Badge tone="red">Thanh toán lỗi</Badge>;
+  if (paymentStatus === "REFUNDED") return <Badge>Hoàn tiền</Badge>;
+  return <Badge>{paymentStatus || "UNKNOWN"}</Badge>;
+}
+
 export default function AppointmentsPage() {
+  const [tab, setTab] = useState("UPCOMING");
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(0);
+
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [data, setData] = useState({ content: [], totalPages: 0, number: 0 });
+
+  const hasData = useMemo(() => (data?.content?.length || 0) > 0, [data]);
+
+  async function load() {
+    setLoading(true);
+    setErr("");
+    try {
+      const res = await apiGet(
+        `/api/patient/appointments?bucket=${tab}&q=${encodeURIComponent(q || "")}&page=${page}&size=10`
+      );
+      setData(res);
+    } catch (e) {
+      setErr(e?.message || "Không tải được lịch khám");
+      setData({ content: [], totalPages: 0, number: 0 });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, page]);
+
+  // Search: enter để tìm
+  const onSearchKeyDown = (e) => {
+    if (e.key === "Enter") {
+      setPage(0);
+      load();
+    }
+  };
+
   return (
     <div>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold text-slate-800">Lịch khám</h1>
-        <button className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold hover:bg-slate-50">
-          <span>🔎</span> Lọc
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setPage(0);
+              load();
+            }}
+            className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold hover:bg-slate-50"
+          >
+            <span>🔄</span> Tải lại
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => {
+              setTab(t.key);
+              setPage(0);
+            }}
+            className={
+              t.key === tab
+                ? "rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+                : "rounded-xl border px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            }
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={onSearchKeyDown}
+          className="w-full max-w-xl rounded-xl border px-4 py-2 outline-none focus:ring-2 focus:ring-sky-200"
+          placeholder="Tìm: mã lịch (id), tên hồ sơ, tên bác sĩ, chuyên khoa, phòng..."
+        />
+        <button
+          onClick={() => {
+            setPage(0);
+            load();
+          }}
+          className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700"
+        >
+          🔎 Tìm
         </button>
       </div>
 
-      <div className="mt-4">
-        <input
-          className="w-full max-w-md rounded-xl border px-4 py-2 outline-none focus:ring-2 focus:ring-sky-200"
-          placeholder="Mã giao dịch, tên dịch vụ, tên bệnh nhân,..."
-        />
-      </div>
+      {/* States */}
+      {loading && (
+        <div className="mt-6 rounded-2xl border bg-slate-50 p-6 text-slate-600">
+          Đang tải lịch khám...
+        </div>
+      )}
 
-      <div className="mt-8 rounded-2xl border bg-slate-50 p-10 text-center">
-        <div className="text-slate-500">Lịch khám của bạn trống!</div>
-      </div>
+      {!loading && err && (
+        <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+          {err}
+        </div>
+      )}
+
+      {!loading && !err && !hasData && (
+        <div className="mt-6 rounded-2xl border bg-slate-50 p-10 text-center">
+          <div className="text-slate-600 font-semibold">Không có lịch nào trong mục này.</div>
+          <div className="mt-1 text-sm text-slate-500">
+            Thử đổi tab hoặc tìm kiếm theo tên hồ sơ / bác sĩ / chuyên khoa.
+          </div>
+        </div>
+      )}
+
+      {/* List */}
+      {!loading && !err && hasData && (
+        <div className="mt-6 space-y-3">
+          {data.content.map((a) => (
+            <div key={a.id} className="rounded-2xl border p-4 hover:bg-slate-50">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-lg font-extrabold text-slate-800">
+                    {fmtDate(a.appointmentDate)} • {fmtTime(a.startTime)} - {fmtTime(a.endTime)}
+                  </div>
+
+                  <div className="mt-1 text-sm text-slate-600">
+                    <span className="font-semibold">Hồ sơ:</span> {a.patientProfileName || `#${a.patientProfileId}`}
+                    <span className="mx-2">•</span>
+                    <span className="font-semibold">Bác sĩ:</span> {a.doctorName}
+                  </div>
+
+                  <div className="mt-1 text-sm text-slate-600">
+                    <span className="font-semibold">Chuyên khoa:</span> {a.specialtyName}
+                    <span className="mx-2">•</span>
+                    <span className="font-semibold">Phòng:</span> {a.roomName}
+                  </div>
+
+                  {a.note && (
+                    <div className="mt-2 text-sm text-slate-600">
+                      <span className="font-semibold">Ghi chú:</span> {a.note}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {statusBadge(a.status, a.paymentStatus)}
+                    {payBadge(a.paymentStatus)}
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-xs text-slate-500">Tổng tiền</div>
+                    <div className="text-lg font-extrabold text-slate-900">{moneyVND(a.totalAmount)}</div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      Phí khám: {moneyVND(a.baseFee)} • Giảm BHYT: {moneyVND(a.insuranceDiscount)} • Dịch vụ:{" "}
+                      {moneyVND(a.servicesAmount)}
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-500">Mã lịch: #{a.id}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between pt-2">
+            <div className="text-sm text-slate-600">
+              Trang {data.number + 1} / {Math.max(1, data.totalPages)}
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={page <= 0}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                className="rounded-xl border px-3 py-2 text-sm font-bold disabled:opacity-50"
+              >
+                ◀ Trước
+              </button>
+              <button
+                disabled={page >= (data.totalPages || 1) - 1}
+                onClick={() => setPage((p) => p + 1)}
+                className="rounded-xl border px-3 py-2 text-sm font-bold disabled:opacity-50"
+              >
+                Sau ▶
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
