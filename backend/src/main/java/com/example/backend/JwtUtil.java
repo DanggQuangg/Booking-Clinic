@@ -1,5 +1,7 @@
 package com.example.backend;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -19,11 +21,22 @@ public class JwtUtil {
         long exp = now + 7L * 24 * 60 * 60 * 1000; // 7 ngày
 
         return Jwts.builder()
-                .setSubject(subject) // có thể là userId hoặc phone
+                .setSubject(subject) // NÊN là userId
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(exp))
                 .signWith(key)
                 .compact();
     }
-}
 
+    public Jws<Claims> parse(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
+    }
+
+    public Long getUserId(String token) {
+        String sub = parse(token).getBody().getSubject();
+        return Long.valueOf(sub);
+    }
+}
