@@ -5,6 +5,7 @@ import com.example.backend.dto.SpecialtyDto;
 import com.example.backend.entity.SlotStatus;
 import com.example.backend.entity.UserRole;
 import com.example.backend.entity.UserStatus;
+import com.example.backend.entity.WorkShiftStatus;
 import com.example.backend.repository.DoctorCatalogRepository;
 import com.example.backend.repository.SpecialtyRepository;
 import org.springframework.stereotype.Service;
@@ -31,13 +32,15 @@ public class PublicCatalogService {
     }
 
     public List<DoctorPublicDto> listAvailableDoctors(Long specialtyId, LocalDate date) {
-        int dayOfWeek = date.getDayOfWeek().getValue(); // Mon=1..Sun=7
-        return doctorCatalogRepo.findAvailableDoctors(
+        if (specialtyId == null || date == null) return List.of();
+
+        return doctorCatalogRepo.findAvailableDoctorsByDate(
                 specialtyId,
-                dayOfWeek,
+                date,
                 UserRole.DOCTOR,
                 UserStatus.ACTIVE,
-                SlotStatus.ACTIVE
+                SlotStatus.ACTIVE,
+                WorkShiftStatus.CANCELLED
         );
     }
 }

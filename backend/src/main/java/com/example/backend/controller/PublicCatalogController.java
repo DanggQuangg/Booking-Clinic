@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/public")
+@RequestMapping("/api/public/catalog")
 public class PublicCatalogController {
 
     private final PublicCatalogService catalog;
@@ -23,7 +23,6 @@ public class PublicCatalogController {
         return catalog.listSpecialties();
     }
 
-    // ✅ NEW: doctors available by specialty + date
     @GetMapping("/doctors/available")
     public List<DoctorPublicDto> availableDoctors(
             @RequestParam Long specialtyId,

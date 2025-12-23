@@ -1,6 +1,5 @@
 package com.example.backend.repository;
 
-import com.example.backend.dto.DoctorPublicDto;
 import com.example.backend.entity.SlotStatus;
 import com.example.backend.entity.User;
 import com.example.backend.entity.UserRole;
@@ -13,19 +12,19 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface DoctorCatalogRepository extends JpaRepository<User, Long> {
+public interface DoctorAvailabilityRepository extends JpaRepository<User, Long> {
 
     @Query("""
-        select distinct new com.example.backend.dto.DoctorPublicDto(
-            u.id, u.fullName, dp.avatarUrl, dp.degree, dp.positionTitle, dp.consultationFee, dp.isVerified
-        )
+        select distinct u
         from User u
-        join u.doctorProfile dp
-        where u.role = :doctorRole
-          and u.status = :activeStatus
+        join fetch u.doctorProfile dp
+        where u.role = :role
+          and u.status = :status
           and exists (
-              select 1 from com.example.backend.entity.DoctorSpecialty ds
-              where ds.doctor.id = u.id and ds.specialty.id = :specialtyId
+              select 1
+              from com.example.backend.entity.DoctorSpecialty ds
+              where ds.doctor.id = u.id
+                and ds.specialty.id = :specialtyId
           )
           and exists (
               select 1
@@ -34,16 +33,16 @@ public interface DoctorCatalogRepository extends JpaRepository<User, Long> {
               where ws.doctor.id = u.id
                 and ws.workDate = :date
                 and ws.status <> :cancelled
-                and sl.status = :slotActive
+                and sl.status = :slotStatus
           )
         order by dp.isVerified desc, u.fullName asc
     """)
-    List<DoctorPublicDto> findAvailableDoctorsByDate(
+    List<User> findAvailableDoctorsBySpecialtyAndDate(
             @Param("specialtyId") Long specialtyId,
             @Param("date") LocalDate date,
-            @Param("doctorRole") UserRole doctorRole,
-            @Param("activeStatus") UserStatus activeStatus,
-            @Param("slotActive") SlotStatus slotActive,
+            @Param("role") UserRole role,
+            @Param("status") UserStatus status,
+            @Param("slotStatus") SlotStatus slotStatus,
             @Param("cancelled") WorkShiftStatus cancelled
     );
 }

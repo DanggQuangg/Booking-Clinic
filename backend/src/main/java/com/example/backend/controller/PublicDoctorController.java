@@ -7,6 +7,8 @@ import com.example.backend.service.PublicDoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 
 import java.util.List;
 
@@ -31,4 +33,16 @@ public class PublicDoctorController {
         if (dto == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(dto);
     }
+    @GetMapping("/doctors/available")
+    public List<DoctorCardDto> availableDoctors(
+            @RequestParam Long specialtyId,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return publicDoctorService.availableDoctors(specialtyId, date);
+    }
+    @GetMapping("/specialties")
+    public List<SpecialtyDto> listSpecialties() {
+        return publicDoctorService.listSpecialties();
+    }
+
 }

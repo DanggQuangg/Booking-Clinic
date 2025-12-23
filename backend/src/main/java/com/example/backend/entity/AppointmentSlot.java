@@ -6,35 +6,29 @@ import lombok.*;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "doctor_weekly_time_slots",
-        indexes = @Index(name = "idx_doc_dow", columnList = "doctor_id, day_of_week"),
+@Table(
+        name = "appointment_slots",
+        indexes = @Index(name = "idx_slot_shift", columnList = "work_shift_id"),
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_doc_weekly_slot",
-                columnNames = {"doctor_id","day_of_week","start_time","end_time","room_id"}
+                name = "uk_shift_time",
+                columnNames = {"work_shift_id", "start_time", "end_time"}
         )
 )
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class DoctorWeeklyTimeSlot {
+public class AppointmentSlot {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id", nullable = false)
-    private User doctor;
-
-    @Column(name = "day_of_week", nullable = false)
-    private Integer dayOfWeek; // 1..7
+    @JoinColumn(name = "work_shift_id", nullable = false)
+    private DoctorWorkShift workShift;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private ClinicRoom room;
 
     @Column(name = "capacity", nullable = false)
     @Builder.Default
@@ -43,5 +37,5 @@ public class DoctorWeeklyTimeSlot {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 10)
     @Builder.Default
-    private SlotStatus status = SlotStatus.ACTIVE;
+    private SlotStatus status = SlotStatus.ACTIVE; // bạn đang có enum SlotStatus sẵn
 }

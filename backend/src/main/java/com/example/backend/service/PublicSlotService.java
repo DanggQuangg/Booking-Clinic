@@ -1,43 +1,48 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.SlotAvailabilityDto;
-import com.example.backend.entity.SlotStatus;
+import com.example.backend.entity.*;
 import com.example.backend.repository.AppointmentRepository;
-import com.example.backend.repository.DoctorWeeklyTimeSlotRepository;
+import com.example.backend.repository.AppointmentSlotRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PublicSlotService {
 
-    private final DoctorWeeklyTimeSlotRepository slotRepo;
-    private final AppointmentRepository apptRepo;
+    private final AppointmentSlotRepository appointmentSlotRepository;
+    private final AppointmentRepository appointmentRepository;
 
-    public PublicSlotService(DoctorWeeklyTimeSlotRepository slotRepo,
-                             AppointmentRepository apptRepo) {
-        this.slotRepo = slotRepo;
-        this.apptRepo = apptRepo;
-    }
+    public List<SlotAvailabilityDto> getDoctorSlots(Long doctorId, LocalDate date) {
 
-    public List<SlotAvailabilityDto> listSlots(Long doctorId, LocalDate date) {
-        int dow = date.getDayOfWeek().getValue(); // Mon=1..Sun=7
-
-        var slots = slotRepo.findByDoctor_IdAndDayOfWeekAndStatusOrderByStartTimeAsc(
-                doctorId, dow, SlotStatus.ACTIVE
+        List<AppointmentSlot> slots = appointmentSlotRepository.findActiveSlotsByDoctorAndDate(
+                doctorId,
+                date,
+                SlotStatus.ACTIVE,
+                WorkShiftStatus.CANCELLED
         );
 
-        return slots.stream().map(s -> {
-            long booked = apptRepo.countBooked(doctorId, s.getId(), date);
-            int remaining = Math.max(0, s.getCapacity() - (int) booked);
+        return slots.stream().map(slot -> {
+            DoctorWorkShift ws = slot.getWorkShift();
+            ClinicRoom room = ws.getRoom();
+
+            // Option A
+            long booked = appointmentRepository.countBooked(slot.getId(), date);
+
+            int capacity = slot.getCapacity() == null ? 0 : slot.getCapacity();
+            int remaining = Math.max(0, capacity - (int) booked);
+
             return new SlotAvailabilityDto(
-                    s.getId(),
-                    s.getStartTime().toString(),
-                    s.getEndTime().toString(),
-                    s.getRoom().getId(),
-                    s.getRoom().getRoomName(),
-                    s.getCapacity(),
+                    slot.getId(),
+                    slot.getStartTime().toString(),
+                    slot.getEndTime().toString(),
+                    room.getId(),
+                    room.getRoomName(),
+                    capacity,
                     remaining
             );
         }).toList();

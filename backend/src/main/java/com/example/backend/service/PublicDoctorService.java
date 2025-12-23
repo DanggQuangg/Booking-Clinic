@@ -4,17 +4,16 @@ import com.example.backend.dto.DoctorCardDto;
 import com.example.backend.dto.DoctorDetailDto;
 import com.example.backend.dto.SpecialtyDto;
 import com.example.backend.entity.DoctorSpecialty;
-import com.example.backend.entity.DoctorWeeklyTimeSlot;
 import com.example.backend.entity.User;
 import com.example.backend.entity.UserRole;
 import com.example.backend.entity.UserStatus;
-import com.example.backend.repository.DoctorDirectoryRepository;
-import com.example.backend.repository.DoctorSpecialtyRepository;
-import com.example.backend.repository.DoctorWeeklyTimeSlotRepository;
-import com.example.backend.repository.SpecialtyRepository;
+import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.example.backend.entity.SlotStatus;
+import com.example.backend.entity.WorkShiftStatus;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -23,8 +22,9 @@ public class PublicDoctorService {
 
     private final DoctorDirectoryRepository doctorDirectoryRepository;
     private final DoctorSpecialtyRepository doctorSpecialtyRepository;
-    private final DoctorWeeklyTimeSlotRepository slotRepository;
+    private final DoctorWorkShiftRepository doctorWorkShiftRepository;
     private final SpecialtyRepository specialtyRepository;
+    private final DoctorAvailabilityRepository doctorAvailabilityRepository;
 
     public List<SpecialtyDto> listSpecialties() {
         return specialtyRepository.findAll().stream()
@@ -57,11 +57,7 @@ public class PublicDoctorService {
                 .map(s -> new SpecialtyDto(s.getId(), s.getName(), s.getDescription(), s.getImageUrl()))
                 .toList();
 
-        List<DoctorDetailDto.WeeklySlotDto> slots = slotRepository
-                .findAllByDoctor_IdOrderByDayOfWeekAscStartTimeAsc(doctorId)
-                .stream()
-                .map(this::toWeeklySlotDto)
-                .toList();
+
 
         return new DoctorDetailDto(
                 u.getId(),
@@ -78,7 +74,7 @@ public class PublicDoctorService {
                 dp.getIsVerified(),
 
                 specs,
-                slots
+                List.of()
         );
     }
 
@@ -102,15 +98,16 @@ public class PublicDoctorService {
         );
     }
 
-    private DoctorDetailDto.WeeklySlotDto toWeeklySlotDto(DoctorWeeklyTimeSlot s) {
-        return new DoctorDetailDto.WeeklySlotDto(
-                s.getId(),
-                s.getDayOfWeek(),
-                s.getStartTime() == null ? null : s.getStartTime().toString(),
-                s.getEndTime() == null ? null : s.getEndTime().toString(),
-                s.getRoom() == null ? null : s.getRoom().getRoomName(),
-                s.getCapacity(),
-                s.getStatus() == null ? null : s.getStatus().name()
-        );
+    public List<DoctorCardDto> availableDoctors(Long specialtyId, LocalDate date) {
+        if (specialtyId == null || date == null) return List.of();
+
+        return doctorAvailabilityRepository
+                .findAvailableDoctorsBySpecialtyAndDate(
+                        specialtyId, date,
+                        UserRole.DOCTOR, UserStatus.ACTIVE,
+                        SlotStatus.ACTIVE, WorkShiftStatus.CANCELLED
+                )
+                .stream().map(this::toCardDto)
+                .toList();
     }
 }

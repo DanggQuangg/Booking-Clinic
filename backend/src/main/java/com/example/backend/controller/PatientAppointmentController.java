@@ -22,8 +22,7 @@ public class PatientAppointmentController {
     @PostMapping
     public ResponseEntity<?> book(@Valid @RequestBody BookAppointmentRequest req) {
 
-        // Tạm thời hardcode để test (sau này lấy từ JWT)
-        Long patientUserId = 1L;
+        Long patientUserId = 101L; // hoặc id PATIENT thật của bạn
 
         Appointment appt = bookingService.book(patientUserId, req);
 

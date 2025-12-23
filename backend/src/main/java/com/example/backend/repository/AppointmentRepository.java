@@ -11,12 +11,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("""
         select count(a) from Appointment a
-        where a.doctor.id = :doctorId
-          and a.slot.id = :slotId
+        where a.slot.id = :slotId
           and a.appointmentDate = :date
           and a.status <> com.example.backend.entity.AppointmentStatus.CANCELLED
     """)
-    long countBooked(@Param("doctorId") Long doctorId,
-                     @Param("slotId") Long slotId,
+    long countBooked(@Param("slotId") Long slotId,
                      @Param("date") LocalDate date);
 }

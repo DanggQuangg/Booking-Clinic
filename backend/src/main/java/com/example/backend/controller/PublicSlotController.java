@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.SlotAvailabilityDto;
 import com.example.backend.service.PublicSlotService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -18,8 +19,11 @@ public class PublicSlotController {
     }
 
     @GetMapping("/doctors/{doctorId}/slots")
-    public List<SlotAvailabilityDto> slots(@PathVariable Long doctorId,
-                                           @RequestParam String date) {
-        return slotService.listSlots(doctorId, LocalDate.parse(date)); // yyyy-mm-dd
+    public List<SlotAvailabilityDto> getSlots(
+            @PathVariable Long doctorId,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return slotService.getDoctorSlots(doctorId, date);
     }
+
 }
