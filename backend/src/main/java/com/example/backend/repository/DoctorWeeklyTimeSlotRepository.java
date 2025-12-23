@@ -10,4 +10,6 @@ public interface DoctorWeeklyTimeSlotRepository extends JpaRepository<DoctorWeek
     List<DoctorWeeklyTimeSlot> findByDoctor_IdAndDayOfWeekAndStatusOrderByStartTimeAsc(
             Long doctorId, Integer dayOfWeek, SlotStatus status
     );
+    List<DoctorWeeklyTimeSlot> findAllByDoctor_IdOrderByDayOfWeekAscStartTimeAsc(Long doctorId);
+
 }
