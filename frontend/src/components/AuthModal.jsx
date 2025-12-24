@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Phone, Lock, Mail, User2, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const overlayV = {
   hidden: { opacity: 0 },
@@ -13,7 +14,7 @@ const modalV = {
   hidden: { opacity: 0, y: 30, scale: 0.98, filter: "blur(2px)" },
   show: {
     opacity: 1,
-    y: 300,
+    y: 300, 
     scale: 1,
     filter: "blur(0px)",
     transition: { duration: 0.18, ease: "easeOut" },
@@ -29,8 +30,9 @@ const modalV = {
 
 export default function AuthModal({ open, mode, onClose, onSwitchMode }) {
   const { login, register } = useAuth();
-  const isLogin = mode === "login";
+  const navigate = useNavigate();
 
+  const isLogin = mode === "login";
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
@@ -47,7 +49,7 @@ export default function AuthModal({ open, mode, onClose, onSwitchMode }) {
     setErr("");
   }, [open, mode]);
 
-  // ESC để đóng
+  // ✅ ESC để đóng nhanh
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -72,13 +74,21 @@ export default function AuthModal({ open, mode, onClose, onSwitchMode }) {
     setLoading(true);
     try {
       if (isLogin) {
-        await login(loginForm);
+        const userData = await login(loginForm);
+
+        // điều hướng theo role
+        if (userData?.role === "DOCTOR")
+          navigate("/doctor/dashboard", { replace: true });
+        else navigate("/", { replace: true });
+
+        onClose?.();
       } else {
         await register(regForm);
+        alert("Đăng ký thành công! Hãy đăng nhập.");
+        onSwitchMode?.("login");
       }
-      onClose?.(); // thành công -> đóng modal
     } catch (ex) {
-      setErr(ex?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
+      setErr(ex?.response?.data?.message || ex?.message || "Lỗi đăng nhập");
     } finally {
       setLoading(false);
     }
@@ -99,7 +109,7 @@ export default function AuthModal({ open, mode, onClose, onSwitchMode }) {
             aria-hidden="true"
           />
 
-          {/* dialog wrapper (CENTER CHUẨN GIỮA MÀN HÌNH) */}
+          {/* dialog wrapper (CENTER) */}
           <div className="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6">
             <motion.div
               variants={modalV}
@@ -133,7 +143,7 @@ export default function AuthModal({ open, mode, onClose, onSwitchMode }) {
                   </button>
                 </div>
 
-                {/* Body (SCROLL BÊN TRONG) */}
+                {/* Body (SCROLL) */}
                 <form
                   className="px-6 py-5 space-y-3 overflow-y-auto"
                   onSubmit={onSubmit}
@@ -256,7 +266,6 @@ export default function AuthModal({ open, mode, onClose, onSwitchMode }) {
                     </button>
                   </div>
 
-                  {/* Small hint */}
                   <div className="text-xs text-slate-500 text-center pt-1">
                     Tip: bạn có thể bấm <span className="font-bold">ESC</span>{" "}
                     để đóng nhanh.
@@ -286,14 +295,17 @@ function Field({
       <div className="text-sm font-semibold text-slate-700 mb-1">{label}</div>
 
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-          {icon}
-        </span>
+        {icon && (
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            {icon}
+          </span>
+        )}
 
         <input
-          className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-3 py-2.5 outline-none
+          className={`w-full rounded-2xl border border-slate-200 bg-white pr-3 py-2.5 outline-none
                      focus:ring-2 focus:ring-sky-200 focus:border-sky-200
-                     hover:border-slate-300 transition disabled:bg-slate-50 disabled:cursor-not-allowed"
+                     hover:border-slate-300 transition disabled:bg-slate-50 disabled:cursor-not-allowed
+                     ${icon ? "pl-10" : "pl-3"}`}
           type={type}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}

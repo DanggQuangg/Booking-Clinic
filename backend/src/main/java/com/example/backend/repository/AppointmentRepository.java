@@ -11,9 +11,21 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-
+    boolean existsByPatientProfileIdAndAppointmentDateAndSlot_Id(Long patientProfileId, LocalDate appointmentDate, Long slotId);
+    @Query("""
+        select a from Appointment a
+        join a.patientProfile pp
+        where a.id = :id and pp.ownerUserId = :ownerUserId
+    """)
+    Optional<Appointment> findByIdAndOwnerUserId(@Param("id") Long id, @Param("ownerUserId") Long ownerUserId);
+    // hoặc tên gọn hơn (tao dùng ở service):
+    default boolean existsByPatientProfileIdAndAppointmentDateAndSlotId(Long profileId, LocalDate date, Long slotId) {
+        return existsByPatientProfileIdAndAppointmentDateAndSlot_Id(profileId, date, slotId);
+    }
     @Query("""
         select count(a) from Appointment a
         where a.slot.id = :slotId
@@ -197,5 +209,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("statuses") Collection<AppointmentStatus> statuses,
             @Param("fromDate") LocalDate fromDate
     );
+    @Query("""
+        SELECT a FROM Appointment a
+        JOIN FETCH a.slot s
+        LEFT JOIN FETCH a.patientProfile p
+        WHERE a.doctor.id = :doctorId
+          AND a.appointmentDate = :today
+          AND a.status IN ('CONFIRMED', 'AWAITING_PAYMENT', 'DONE')
+        ORDER BY s.startTime ASC
+    """)
+    List<Appointment> findDoctorQueue(@Param("doctorId") Long doctorId, @Param("today") LocalDate today);
+    
 }
 

@@ -65,9 +65,9 @@ public class Appointment {
     @JoinColumn(name = "slot_id", nullable = false)
     private AppointmentSlot slot;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private ClinicRoom room;
+        @ManyToOne
+        @JoinColumn(name = "room_id", nullable = false)
+        private ClinicRoom room;
 
     @Column(name = "appointment_date", nullable = false)
     private LocalDate appointmentDate;
@@ -115,4 +115,6 @@ public class Appointment {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
 }

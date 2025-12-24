@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AuthResponse {
     private String token;
-    private String role;     
-    private String fullName; 
+    private String role;     // BẮT BUỘC trả về role cho FE
+    private String fullName;
 }

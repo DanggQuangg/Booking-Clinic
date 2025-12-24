@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot, Long> {
-
+  
     @Query("""
         select s
         from AppointmentSlot s

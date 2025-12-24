@@ -35,7 +35,7 @@ public class PatientPrescriptionService {
     public List<PrescriptionItemDto> getPrescriptionsForAppointment(Long appointmentId) {
         Long userId = currentUserId();
 
-        MedicalRecord record = medicalRecordRepository.findByAppointment_Id(appointmentId)
+        MedicalRecord record = medicalRecordRepository.findByAppointmentId(appointmentId)
                 .orElse(null);
 
         if (record == null) return List.of();

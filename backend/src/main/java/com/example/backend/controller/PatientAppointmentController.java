@@ -2,10 +2,13 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.AppointmentBucket;
 import com.example.backend.dto.BookAppointmentRequest;
+import com.example.backend.dto.CancelAppointmentResponse;
 import com.example.backend.dto.PatientAppointmentDto;
+import com.example.backend.dto.PrescriptionItemDto;
 import com.example.backend.entity.Appointment;
 import com.example.backend.service.AppointmentBookingService;
 import com.example.backend.service.PatientAppointmentService;
+import com.example.backend.service.PatientPrescriptionService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,10 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import com.example.backend.dto.PrescriptionItemDto;
-import com.example.backend.service.PatientPrescriptionService;
-import java.util.List;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -37,9 +38,9 @@ public class PatientAppointmentController {
         this.patientPrescriptionService = patientPrescriptionService; // NEW
     }
 
-
     // =========================
-    // 1) ĐẶT LỊCH (bạn đã có)
+    // 1) ĐẶT LỊCH
+    // POST /api/patient/appointments
     // =========================
     @PostMapping
     public ResponseEntity<?> book(@Valid @RequestBody BookAppointmentRequest req) {
@@ -56,11 +57,12 @@ public class PatientAppointmentController {
     }
 
     // =========================
-    // 2) XEM LỊCH KHÁM (thêm mới)
+    // 2) DANH SÁCH LỊCH HẸN CỦA TÔI
+    // GET /api/patient/appointments?bucket=&q=&page=&size=
     // =========================
     @GetMapping
     public ResponseEntity<Page<PatientAppointmentDto>> myAppointments(
-            @RequestParam(required = false) AppointmentBucket bucket, // UPCOMING | REGISTERED | DONE
+            @RequestParam(required = false) AppointmentBucket bucket,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -69,9 +71,26 @@ public class PatientAppointmentController {
         Page<PatientAppointmentDto> result = patientAppointmentService.getMyAppointments(bucket, q, pageable);
         return ResponseEntity.ok(result);
     }
+
+    // =========================
+    // 3) XEM THUỐC / ĐƠN THUỐC THEO LỊCH HẸN
+    // GET /api/patient/appointments/{appointmentId}/prescriptions
+    // =========================
     @GetMapping("/{appointmentId}/prescriptions")
     public ResponseEntity<List<PrescriptionItemDto>> prescriptions(@PathVariable Long appointmentId) {
-        return ResponseEntity.ok(patientPrescriptionService.getPrescriptionsForAppointment(appointmentId));
+        return ResponseEntity.ok(
+                patientPrescriptionService.getPrescriptionsForAppointment(appointmentId)
+        );
+    }
+
+    // =========================
+    // 4) HỦY LỊCH
+    // POST /api/patient/appointments/{id}/cancel
+    // =========================
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<CancelAppointmentResponse> cancel(@PathVariable("id") Long appointmentId) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CancelAppointmentResponse res = patientAppointmentService.cancelAppointment(userId, appointmentId);
+        return ResponseEntity.ok(res);
     }
 }
-

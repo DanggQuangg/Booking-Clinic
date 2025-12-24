@@ -1,6 +1,7 @@
 package com.example.backend.repository;
 
 import com.example.backend.entity.DoctorWorkShift;
+import com.example.backend.entity.ShiftType;
 import com.example.backend.entity.WorkShiftStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface DoctorWorkShiftRepository extends JpaRepository<DoctorWorkShift, Long> {
-
+    boolean existsByDoctorIdAndWorkDateAndShift(Long doctorId, LocalDate workDate, ShiftType shift);
+    
     @Query("""
         select ws
         from DoctorWorkShift ws
