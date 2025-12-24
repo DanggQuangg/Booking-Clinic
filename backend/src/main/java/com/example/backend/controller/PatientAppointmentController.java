@@ -13,6 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.dto.PrescriptionItemDto;
+import com.example.backend.service.PatientPrescriptionService;
+import java.util.List;
 
 import java.util.Map;
 
@@ -22,14 +25,18 @@ public class PatientAppointmentController {
 
     private final AppointmentBookingService bookingService;
     private final PatientAppointmentService patientAppointmentService;
+    private final PatientPrescriptionService patientPrescriptionService; // NEW
 
     public PatientAppointmentController(
             AppointmentBookingService bookingService,
-            PatientAppointmentService patientAppointmentService
+            PatientAppointmentService patientAppointmentService,
+            PatientPrescriptionService patientPrescriptionService // NEW
     ) {
         this.bookingService = bookingService;
         this.patientAppointmentService = patientAppointmentService;
+        this.patientPrescriptionService = patientPrescriptionService; // NEW
     }
+
 
     // =========================
     // 1) ĐẶT LỊCH (bạn đã có)
@@ -62,4 +69,9 @@ public class PatientAppointmentController {
         Page<PatientAppointmentDto> result = patientAppointmentService.getMyAppointments(bucket, q, pageable);
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/{appointmentId}/prescriptions")
+    public ResponseEntity<List<PrescriptionItemDto>> prescriptions(@PathVariable Long appointmentId) {
+        return ResponseEntity.ok(patientPrescriptionService.getPrescriptionsForAppointment(appointmentId));
+    }
 }
+

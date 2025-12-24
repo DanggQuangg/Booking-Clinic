@@ -46,9 +46,9 @@ public class AppointmentBookingService {
         AppointmentSlot slot = appointmentSlotRepo.findById(req.slotId())
                 .orElseThrow(() -> new RuntimeException("Slot không tồn tại."));
 
-        if (!"ACTIVE".equals(slot.getStatus())) {
-            throw new RuntimeException("Slot đang INACTIVE.");
-        }
+//        if (!"ACTIVE".equals(slot.getStatus())) {
+//            throw new RuntimeException("Slot đang INACTIVE.");
+//        }
 
         // 3) Lấy shift (chứa doctor + room + workDate + status)
         DoctorWorkShift ws = slot.getWorkShift();

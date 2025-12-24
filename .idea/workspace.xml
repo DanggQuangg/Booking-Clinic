@@ -5,17 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b6cccd9e-8356-4055-9306-17953b191f6c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/JwtUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/JwtUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/dto/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/dto/AuthResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/controller/PatientAppointmentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/controller/PatientAppointmentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/dto/DoctorDetailDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/dto/DoctorDetailDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/exception/ApiExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/exception/ApiExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/AppointmentSlotRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/AppointmentSlotRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/AppointmentBookingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/AppointmentBookingService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/PublicDoctorService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/PublicDoctorService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AuthModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AuthModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BookStep1Specialty.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BookStep1Specialty.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BookStep2DateDoctor.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BookStep2DateDoctor.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BookStep3Slot.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BookStep3Slot.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BookStep4ProfileConfirm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BookStep4ProfileConfirm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/DoctorDetailPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DoctorDetailPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/DoctorsPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DoctorsPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Home.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Home.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/account/AccountLayout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/account/AccountLayout.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/account/AppointmentsPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/account/AppointmentsPage.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -41,7 +64,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.BackendApplication.executor": "Run",
-    "git-widget-placeholder": "hoangdanh",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "E:/Booking-Clinic",
     "node.js.detected.package.eslint": "true",
@@ -52,6 +75,26 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="temurin-17" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <module name="backend" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.backend.BackendApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <option name="ALTERNATIVE_JRE_PATH" value="temurin-17" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <module name="backend" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.backend.BackendApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

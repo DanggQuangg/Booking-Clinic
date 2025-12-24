@@ -29,7 +29,7 @@ public class ApiExceptionHandler {
         String msg = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(e -> e.getField() + " " + e.getDefaultMessage())
-                .orElse("Dữ liệu không hợp lệ");
+                .orElse("Bạn đã đặt rồi không thể đặt lại");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", msg));
     }
 }

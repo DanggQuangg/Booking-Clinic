@@ -29,4 +29,11 @@ public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot
             @Param("slotStatus") SlotStatus slotStatus,
             @Param("cancelled") WorkShiftStatus cancelled
     );
+    @Query("""
+        select s
+        from AppointmentSlot s
+        where s.workShift.id in :shiftIds
+        order by s.workShift.id asc, s.startTime asc
+    """)
+    List<AppointmentSlot> findByShiftIds(@Param("shiftIds") List<Long> shiftIds);
 }
