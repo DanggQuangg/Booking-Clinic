@@ -31,10 +31,20 @@ export function AuthProvider({ children }) {
     persist(res.data);
     return res.data;
   };
+  const updateLocalUser = (patch) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      localStorage.setItem(LS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   const logout = () => persist(null);
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user]);
+  const value = useMemo(() => ({ user, login, register, logout, updateLocalUser }), [user]);
+  
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
