@@ -16,7 +16,6 @@ public class InvoiceController {
 
     @GetMapping("/invoice")
     public InvoiceDto invoice(@RequestParam Long appointmentId) {
-        // TODO: kiểm tra appointment thuộc user đang login sau
         return repo.getInvoice(appointmentId);
     }
 }

@@ -18,7 +18,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> db(DataIntegrityViolationException e) {
-        return ResponseEntity.badRequest().body(Map.of("message", "Dữ liệu không hợp lệ: " + e.getMostSpecificCause().getMessage()));
+        return ResponseEntity.badRequest().body(Map.of("message", "Bạn đã đặt lịch này rồi"));
     }
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraint(ConstraintViolationException ex) {
