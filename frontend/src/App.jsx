@@ -16,40 +16,53 @@ import DoctorDetailPage from "./pages/DoctorDetailPage";
 import PricingPage from "./pages/PricingPage";
 import ServicesPage from "./pages/ServicesPage";
 import ServiceBookingPage from "./pages/ServiceBookingPage";
+
+// 1. Import Chatbot vào đây (đảm bảo đường dẫn đúng với nơi bạn tạo file Chatbot.jsx)
+import Chatbot from "./components/Chatbot"; 
+
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
+    <div className="app-container">
+      
+      {/* Phần điều hướng trang chính */}
+      <Routes>
+        <Route path="/" element={<Home />} />
 
-      <Route path="/doctors" element={<DoctorsPage />} />
-      <Route path="/doctors/:id" element={<DoctorDetailPage />} />
+        <Route path="/doctors" element={<DoctorsPage />} />
+        <Route path="/doctors/:id" element={<DoctorDetailPage />} />
 
-      <Route path="/book" element={<BookStep1Specialty />} />
-      <Route path="/book/step2" element={<BookStep2DateDoctor />} />
-      <Route path="/book/step3" element={<BookStep3Slot />} />
-      <Route path="/book/step4" element={<BookStep4ProfileConfirm />} />
-      <Route path="/book/invoice" element={<InvoicePage />} />
-      <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/book" element={<BookStep1Specialty />} />
+        <Route path="/book/step2" element={<BookStep2DateDoctor />} />
+        <Route path="/book/step3" element={<BookStep3Slot />} />
+        <Route path="/book/step4" element={<BookStep4ProfileConfirm />} />
+        <Route path="/book/invoice" element={<InvoicePage />} />
+        <Route path="/pricing" element={<PricingPage />} />
 
-      <Route path="/services" element={<ServicesPage />} />
-      <Route path="/services/:id" element={<ServiceBookingPage />} />
-      {/* Account area */}
-      <Route
-        path="/account"
-        element={
-          <RequireAuth>
-            <AccountLayout />
-          </RequireAuth>
-        }
-      >
-        <Route index element={<Navigate to="/account/appointments" replace />} />
-        <Route path="appointments" element={<AppointmentsPage />} />
-        <Route path="payments" element={<PaymentsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Route>
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/:id" element={<ServiceBookingPage />} />
+        {/* Account area */}
+        <Route
+          path="/account"
+          element={
+            <RequireAuth>
+              <AccountLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<Navigate to="/account/appointments" replace />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* 3. Đặt Chatbot ở đây để nó luôn hiển thị đè lên mọi trang */}
+      <Chatbot />
+      
+    </div>
+    
   );
 }

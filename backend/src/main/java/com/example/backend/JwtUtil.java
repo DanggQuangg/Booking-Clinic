@@ -1,5 +1,6 @@
 package com.example.backend;
 
+import com.example.backend.entity.User; // Import User Entity
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -9,21 +10,34 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtUtil {
-    // tối thiểu 32 ký tự
-    private final String secret = "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32+";
+    // Secret key phải đủ dài (>= 32 ký tự)
+    private final String secret = "DAY_LA_MA_BI_MAT_RAT_DAI_CAN_PHAI_DU_32_KY_TU_ABC_XYZ_123";
     private final SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
-    public String generateToken(String subject) {
-        long now = System.currentTimeMillis();
-        long exp = now + 7L * 24 * 60 * 60 * 1000; // 7 ngày
+    // Thời gian hết hạn: 7 ngày
+    private final long EXPIRATION_TIME = 7L * 24 * 60 * 60 * 1000; 
 
+    // ✅ Hàm generateToken nhận vào User để lấy Role và Tên
+    public String generateToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        // Lưu Role và Tên vào token để Frontend dùng
+        claims.put("role", user.getRole().name());
+        claims.put("fullName", user.getFullName());
+
+        return createToken(claims, String.valueOf(user.getId()));
+    }
+
+    private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .setSubject(subject) // NÊN là userId
-                .setIssuedAt(new Date(now))
-                .setExpiration(new Date(exp))
+                .setClaims(claims)
+                .setSubject(subject) // ID của user
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key)
                 .compact();
     }
