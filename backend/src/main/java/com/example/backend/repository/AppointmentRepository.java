@@ -12,10 +12,16 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     boolean existsByPatientProfileIdAndAppointmentDateAndSlot_Id(Long patientProfileId, LocalDate appointmentDate, Long slotId);
-
+    @Query("""
+        select a from Appointment a
+        join a.patientProfile pp
+        where a.id = :id and pp.ownerUserId = :ownerUserId
+    """)
+    Optional<Appointment> findByIdAndOwnerUserId(@Param("id") Long id, @Param("ownerUserId") Long ownerUserId);
     // hoặc tên gọn hơn (tao dùng ở service):
     default boolean existsByPatientProfileIdAndAppointmentDateAndSlotId(Long profileId, LocalDate date, Long slotId) {
         return existsByPatientProfileIdAndAppointmentDateAndSlot_Id(profileId, date, slotId);

@@ -110,16 +110,19 @@ public class DoctorService {
                 MedicalRecordItem item = new MedicalRecordItem();
                 item.setRecord(savedRecord);
 
-                // ✅ tránh lỗi chữ thường/hoa
-                item.setItemType(MedicalRecordItemType.valueOf(i.getItemType().toUpperCase()));
+                MedicalRecordItemType t = MedicalRecordItemType.valueOf(
+                        i.getItemType().trim().toUpperCase()
+                );
+                item.setItemType(t);
 
                 item.setItemKey(i.getItemKey());
                 item.setItemValue(i.getItemValue());
                 return item;
-            }).collect(Collectors.toList());
+            }).toList();
 
             medicalRecordItemRepository.saveAll(items);
         }
+
 
         // DONE appointment
         appt.setStatus(AppointmentStatus.DONE);

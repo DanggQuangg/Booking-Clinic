@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiGet } from "../../lib/api";
+import { apiGet, apiPost } from "../../lib/api";
 
 const TABS = [
   { key: "UPCOMING", label: "Lịch hẹn khám" },
@@ -8,14 +8,12 @@ const TABS = [
 ];
 
 function fmtDate(isoDate) {
-  // isoDate: "2025-12-23"
   if (!isoDate) return "";
   const [y, m, d] = isoDate.split("-").map(Number);
   return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`;
 }
 
 function fmtTime(t) {
-  // "07:30:00" -> "07:30"
   if (!t) return "";
   return t.slice(0, 5);
 }
@@ -44,14 +42,12 @@ function Badge({ children, tone = "slate" }) {
   );
 }
 
-function statusBadge(status, paymentStatus) {
-  // status: AWAITING_PAYMENT | CONFIRMED | DONE | CANCELLED | NO_SHOW...
+function statusBadge(status) {
   if (status === "DONE") return <Badge tone="green">Đã khám</Badge>;
   if (status === "CONFIRMED") return <Badge tone="green">Đã xác nhận</Badge>;
   if (status === "AWAITING_PAYMENT") return <Badge tone="yellow">Chờ thanh toán</Badge>;
   if (status === "CANCELLED") return <Badge tone="red">Đã huỷ</Badge>;
   if (status === "NO_SHOW") return <Badge tone="red">Vắng mặt</Badge>;
-  // fallback
   return <Badge>{status || "UNKNOWN"}</Badge>;
 }
 
@@ -62,6 +58,32 @@ function payBadge(paymentStatus) {
   if (paymentStatus === "REFUNDED") return <Badge>Hoàn tiền</Badge>;
   return <Badge>{paymentStatus || "UNKNOWN"}</Badge>;
 }
+function safeJsonParse(s) {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
+function fmtFollowUp(obj) {
+  if (!obj) return null;
+  const date = obj.date ? fmtDate(obj.date) : "";
+  const time = obj.time ? obj.time : "";
+  const note = obj.note ? obj.note : "";
+  return { date, time, note };
+}
+
+// ===== helpers cho record =====
+function groupItems(items = []) {
+  const byType = {};
+  for (const it of items) {
+    const t = (it?.itemType || "OTHER").toUpperCase();
+    if (!byType[t]) byType[t] = [];
+    byType[t].push(it);
+  }
+  return byType;
+}
 
 export default function AppointmentsPage() {
   const [tab, setTab] = useState("UPCOMING");
@@ -71,15 +93,29 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [data, setData] = useState({ content: [], totalPages: 0, number: 0 });
+  
+
+  
+  // Payment modal state
+  const [payOpen, setPayOpen] = useState(false);
+  const [payTarget, setPayTarget] = useState(null);
+  const [paying, setPaying] = useState(false);
+
+  // Record modal state
+  const [recordOpen, setRecordOpen] = useState(false);
+  const [recordTarget, setRecordTarget] = useState(null);
+  const [recordLoading, setRecordLoading] = useState(false);
+  const [recordErr, setRecordErr] = useState("");
+  const [recordData, setRecordData] = useState(null);
 
   const hasData = useMemo(() => (data?.content?.length || 0) > 0, [data]);
 
-  async function load() {
+  async function loadBucket(bucket, pageNo, query) {
     setLoading(true);
     setErr("");
     try {
       const res = await apiGet(
-        `/api/patient/appointments?bucket=${tab}&q=${encodeURIComponent(q || "")}&page=${page}&size=10`
+        `/api/patient/appointments?bucket=${bucket}&q=${encodeURIComponent(query || "")}&page=${pageNo}&size=10`
       );
       setData(res);
     } catch (e) {
@@ -91,15 +127,91 @@ export default function AppointmentsPage() {
   }
 
   useEffect(() => {
-    load();
+    loadBucket(tab, page, q);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, page]);
 
-  // Search: enter để tìm
   const onSearchKeyDown = (e) => {
     if (e.key === "Enter") {
       setPage(0);
-      load();
+      loadBucket(tab, 0, q);
+    }
+  };
+
+  // ===== thanh toán =====
+  const canPay = (a) => a?.status === "AWAITING_PAYMENT" && a?.paymentStatus === "UNPAID";
+
+  const openPay = (appt) => {
+    setPayTarget(appt);
+    setPayOpen(true);
+  };
+
+  const confirmPay = async (method) => {
+    if (!payTarget?.id) return;
+
+    setPaying(true);
+    try {
+      await apiPost(`/api/payments/appointments/${payTarget.id}/confirm`, { method });
+
+      alert("Thanh toán thành công! Lịch đã được xác nhận.");
+
+      setPayOpen(false);
+      setPayTarget(null);
+
+      // đưa về UPCOMING để thấy lịch vừa confirm
+      setTab("UPCOMING");
+      setPage(0);
+      await loadBucket("UPCOMING", 0, q);
+    } catch (e) {
+      alert(e?.message || "Lỗi thanh toán");
+    } finally {
+      setPaying(false);
+    }
+  };
+  // ===== huỷ lịch =====
+  const canCancel = (a) => {
+    const st = (a?.status || "").toUpperCase();
+    // tuỳ luật của bạn: thường cho huỷ khi chưa khám và chưa huỷ
+    return st !== "DONE" && st !== "CANCELLED" && st !== "NO_SHOW";
+  };
+
+  const cancelAppointment = async (appt) => {
+    if (!appt?.id) return;
+
+    const ok = window.confirm(`Bạn chắc chắn muốn hủy lịch #${appt.id} ?`);
+    if (!ok) return;
+
+    try {
+      await apiPost(`/api/patient/appointments/${appt.id}/cancel`, {});
+      alert("✅ Đã hủy lịch thành công!");
+
+      // reload lại list đang đứng
+      await loadBucket(tab, page, q);
+    } catch (e) {
+      alert(e?.message || "❌ Hủy lịch thất bại");
+    }
+  };
+
+  // ===== xem đơn thuốc / bệnh án =====
+  const canViewRecord = (a) => a?.status === "DONE"; // DONE mới chắc có record
+
+  const openRecord = async (appt) => {
+    setRecordTarget(appt);
+    setRecordOpen(true);
+    setRecordErr("");
+    setRecordData(null);
+
+    if (!appt?.id) return;
+
+    setRecordLoading(true);
+    try {
+      const res = await apiGet(`/api/patient/appointments/${appt.id}/record`);
+      setRecordData(res);
+    } catch (e) {
+      setRecordErr(e?.message || "Không tải được đơn thuốc/bệnh án");
+      setRecordData(null);
+    } finally {
+      setRecordLoading(false);
     }
   };
 
@@ -108,17 +220,15 @@ export default function AppointmentsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold text-slate-800">Lịch khám</h1>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setPage(0);
-              load();
-            }}
-            className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold hover:bg-slate-50"
-          >
-            <span>🔄</span> Tải lại
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setPage(0);
+            loadBucket(tab, 0, q);
+          }}
+          className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold hover:bg-slate-50"
+        >
+          <span>🔄</span> Tải lại
+        </button>
       </div>
 
       {/* Tabs */}
@@ -153,7 +263,7 @@ export default function AppointmentsPage() {
         <button
           onClick={() => {
             setPage(0);
-            load();
+            loadBucket(tab, 0, q);
           }}
           className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700"
         >
@@ -211,11 +321,42 @@ export default function AppointmentsPage() {
                       <span className="font-semibold">Ghi chú:</span> {a.note}
                     </div>
                   )}
+                  {/* Actions */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {canPay(a) && (
+                      <button
+                        onClick={() => openPay(a)}
+                        className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700"
+                      >
+                        💳 Thanh toán
+                      </button>
+                    )}
+
+                    
+                    {canCancel(a) && (
+                      <button
+                        onClick={() => cancelAppointment(a)}
+                        className="rounded-xl border border-rose-300 bg-white px-4 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50"
+                      >
+                        🗑️ Huỷ lịch
+                      </button>
+                    )}
+
+
+                    {canViewRecord(a) && (
+                      <button
+                        onClick={() => openRecord(a)}
+                        className="rounded-xl border bg-white px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50"
+                      >
+                        📄 Xem đơn thuốc
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex flex-wrap justify-end gap-2">
-                    {statusBadge(a.status, a.paymentStatus)}
+                    {statusBadge(a.status)}
                     {payBadge(a.paymentStatus)}
                   </div>
 
@@ -258,6 +399,303 @@ export default function AppointmentsPage() {
           </div>
         </div>
       )}
+
+      {/* Payment Modal */}
+      <PaymentModal
+        open={payOpen}
+        paying={paying}
+        appointment={payTarget}
+        onClose={() => {
+          if (paying) return;
+          setPayOpen(false);
+          setPayTarget(null);
+        }}
+        onConfirm={confirmPay}
+      />
+
+      {/* Record Modal */}
+      <RecordModal
+        open={recordOpen}
+        loading={recordLoading}
+        err={recordErr}
+        appointment={recordTarget}
+        record={recordData}
+        onClose={() => {
+          if (recordLoading) return;
+          setRecordOpen(false);
+          setRecordTarget(null);
+          setRecordErr("");
+          setRecordData(null);
+        }}
+      />
     </div>
   );
 }
+
+/** Modal chọn 1 trong 2 phương thức */
+function PaymentModal({ open, paying, appointment, onClose, onConfirm }) {
+  const [method, setMethod] = useState("CASH");
+
+  useEffect(() => {
+    if (open) setMethod("CASH");
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/40" onMouseDown={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-2xl bg-white shadow-xl border" onMouseDown={(e) => e.stopPropagation()}>
+          <div className="p-5 border-b flex items-center justify-between">
+            <h2 className="text-lg font-extrabold">Thanh toán lịch hẹn</h2>
+            <button disabled={paying} onClick={onClose} className="border px-3 py-1 rounded-lg disabled:opacity-50">
+              Đóng
+            </button>
+          </div>
+
+          <div className="p-5 space-y-3">
+            <div className="rounded-xl border bg-slate-50 p-3 text-sm text-slate-700">
+              <div><span className="font-semibold">Mã lịch:</span> #{appointment?.id}</div>
+              <div className="mt-1"><span className="font-semibold">Tổng tiền:</span> {moneyVND(appointment?.totalAmount)}</div>
+            </div>
+
+            <label className="flex items-center gap-3 border rounded-xl p-3 cursor-pointer">
+              <input
+                type="radio"
+                name="pay"
+                checked={method === "CASH"}
+                onChange={() => setMethod("CASH")}
+                disabled={paying}
+              />
+              <div>
+                <div className="font-semibold">Tiền mặt</div>
+                <div className="text-sm text-slate-500">Thanh toán tại phòng khám</div>
+              </div>
+            </label>
+
+            <label className="flex items-center gap-3 border rounded-xl p-3 cursor-pointer">
+              <input
+                type="radio"
+                name="pay"
+                checked={method === "TRANSFER"}
+                onChange={() => setMethod("TRANSFER")}
+                disabled={paying}
+              />
+              <div>
+                <div className="font-semibold">Chuyển khoản</div>
+                <div className="text-sm text-slate-500">Xác nhận đã chuyển khoản</div>
+              </div>
+            </label>
+
+            <button
+              disabled={paying}
+              onClick={() => onConfirm(method)}
+              className="w-full bg-sky-600 text-white py-2 rounded-xl font-bold disabled:opacity-60"
+            >
+              {paying ? "Đang xác nhận..." : "Xác nhận thanh toán"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Modal xem bệnh án / đơn thuốc */
+function RecordModal({ open, loading, err, appointment, record, onClose }) {
+  if (!open) return null;
+
+  const items = record?.items || [];
+  const byType = groupItems(items);
+
+  const vitals = byType["VITAL_SIGN"] || [];
+  const prescriptions = byType["PRESCRIPTION"] || [];
+  const tests = byType["TEST"] || [];
+  const notes = byType["NOTE"] || [];
+  const symptoms = byType["SYMPTOM"] || [];
+
+  // ====== FOLLOW_UP: NOTE itemKey="FOLLOW_UP" + itemValue JSON ======
+  const followUpItem = notes.find(
+    (x) => String(x?.itemKey || "").trim().toUpperCase() === "FOLLOW_UP"
+  );
+  const followUpObjRaw = followUpItem ? safeJsonParse(followUpItem.itemValue) : null;
+  const followUp = fmtFollowUp(followUpObjRaw); // {date,time,note} đã format ngày
+
+  // NOTE thường (loại bỏ FOLLOW_UP để không in JSON ra)
+  const normalNotes = notes.filter(
+    (x) => String(x?.itemKey || "").trim().toUpperCase() !== "FOLLOW_UP"
+  );
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/40" onMouseDown={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div
+          className="w-full max-w-2xl rounded-2xl bg-white shadow-xl border"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div className="p-5 border-b flex items-center justify-between">
+            <div>
+              <div className="text-lg font-extrabold">Đơn thuốc / Bệnh án</div>
+              <div className="text-sm text-slate-500">Mã lịch: #{appointment?.id}</div>
+            </div>
+            <button disabled={loading} onClick={onClose} className="border px-3 py-1 rounded-lg disabled:opacity-50">
+              Đóng
+            </button>
+          </div>
+
+          <div className="p-5 space-y-4 max-h-[75vh] overflow-auto">
+            {loading && (
+              <div className="rounded-xl border bg-slate-50 p-4 text-slate-600">
+                Đang tải đơn thuốc...
+              </div>
+            )}
+
+            {!loading && err && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700 font-semibold">
+                {err}
+              </div>
+            )}
+
+            {!loading && !err && !record && (
+              <div className="rounded-xl border bg-slate-50 p-4 text-slate-600">
+                Chưa có bệnh án cho lịch này.
+              </div>
+            )}
+
+            {!loading && !err && record && (
+              <>
+                {/* Diagnosis / Conclusion */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="rounded-xl border p-4">
+                    <div className="text-xs font-extrabold text-slate-600">Chẩn đoán</div>
+                    <div className="mt-1 whitespace-pre-wrap text-slate-800 font-semibold">
+                      {record?.diagnosis || "—"}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border p-4">
+                    <div className="text-xs font-extrabold text-slate-600">Kết luận & Lời dặn</div>
+                    <div className="mt-1 whitespace-pre-wrap text-slate-800 font-semibold">
+                      {record?.conclusion || "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* FOLLOW UP (hiển thị đẹp, dễ thấy) */}
+                {followUp && (followUp.date || followUp.time || followUp.note) && (
+                  <div className="rounded-xl border p-4">
+                    <div className="text-sm font-extrabold text-slate-800">Lịch tái khám</div>
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="rounded-xl border bg-slate-50 p-3">
+                        <div className="text-xs font-extrabold text-slate-600">Ngày</div>
+                        <div className="mt-1 font-black text-slate-900">{followUp.date || "—"}</div>
+                      </div>
+                      <div className="rounded-xl border bg-slate-50 p-3">
+                        <div className="text-xs font-extrabold text-slate-600">Giờ</div>
+                        <div className="mt-1 font-black text-slate-900">{followUp.time || "—"}</div>
+                      </div>
+                      <div className="rounded-xl border bg-slate-50 p-3">
+                        <div className="text-xs font-extrabold text-slate-600">Ghi chú</div>
+                        <div className="mt-1 font-black text-slate-900 whitespace-pre-wrap">{followUp.note || "—"}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Vitals */}
+                <div className="rounded-xl border p-4">
+                  <div className="text-sm font-extrabold text-slate-800">Sinh hiệu</div>
+                  {vitals.length === 0 ? (
+                    <div className="mt-2 text-sm text-slate-500">Không có dữ liệu sinh hiệu.</div>
+                  ) : (
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {vitals.map((it, idx) => (
+                        <div key={idx} className="rounded-xl border bg-slate-50 p-3">
+                          <div className="text-xs font-extrabold text-slate-600">{it.itemKey || "—"}</div>
+                          <div className="mt-1 font-black text-slate-900">{it.itemValue || "—"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Prescription */}
+                <div className="rounded-xl border p-4">
+                  <div className="text-sm font-extrabold text-slate-800">Đơn thuốc</div>
+                  {prescriptions.length === 0 ? (
+                    <div className="mt-2 text-sm text-slate-500">Không có thuốc.</div>
+                  ) : (
+                    <div className="mt-3 overflow-x-auto">
+                      <table className="min-w-full text-left">
+                        <thead className="bg-slate-50 text-xs font-extrabold text-slate-600">
+                          <tr>
+                            <th className="px-3 py-2">Thuốc</th>
+                            <th className="px-3 py-2">Cách dùng / Ghi chú</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-sm">
+                          {prescriptions.map((it, idx) => (
+                            <tr key={idx} className="border-t">
+                              <td className="px-3 py-2 font-extrabold text-slate-900">{it.itemKey || "—"}</td>
+                              <td className="px-3 py-2 text-slate-700 whitespace-pre-wrap">{it.itemValue || "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Others */}
+                {(symptoms.length + tests.length + normalNotes.length) > 0 && (
+                  <div className="rounded-xl border p-4 space-y-3">
+                    {symptoms.length > 0 && (
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-800">Triệu chứng</div>
+                        <ul className="mt-2 list-disc pl-5 text-sm text-slate-700 space-y-1">
+                          {symptoms.map((it, idx) => (
+                            <li key={idx}>
+                              <span className="font-semibold">{it.itemKey}:</span> {it.itemValue}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {tests.length > 0 && (
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-800">Xét nghiệm</div>
+                        <ul className="mt-2 list-disc pl-5 text-sm text-slate-700 space-y-1">
+                          {tests.map((it, idx) => (
+                            <li key={idx}>
+                              <span className="font-semibold">{it.itemKey}:</span> {it.itemValue}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {normalNotes.length > 0 && (
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-800">Ghi chú</div>
+                        <ul className="mt-2 list-disc pl-5 text-sm text-slate-700 space-y-1">
+                          {normalNotes.map((it, idx) => (
+                            <li key={idx}>
+                              <span className="font-semibold">{it.itemKey}:</span> {it.itemValue}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

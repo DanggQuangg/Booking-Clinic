@@ -40,6 +40,7 @@ public class SecurityConfig {
                 ).permitAll()
                 // API dành riêng cho nội bộ Bác sĩ (cần Token + Role DOCTOR)
                 .requestMatchers("/api/doctor-internal/**").hasRole("DOCTOR")
+                .requestMatchers("/api/patient/**").hasRole("PATIENT")
 
                 // Tất cả các request khác phải có Token
                 .anyRequest().authenticated()
