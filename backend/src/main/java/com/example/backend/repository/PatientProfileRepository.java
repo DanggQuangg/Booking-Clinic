@@ -24,4 +24,8 @@ public interface PatientProfileRepository extends JpaRepository<PatientProfile, 
     void clearDefaultForUser(@Param("userId") Long userId);
     List<PatientProfile> findByOwnerUser_IdOrderByIsDefaultDescCreatedAtDesc(Long ownerUserId);
 
+
+
+    boolean existsByCitizenIdAndIdNot(String citizenId, Long id);
+    boolean existsByHealthInsuranceCodeAndIdNot(String healthInsuranceCode, Long id);
 }

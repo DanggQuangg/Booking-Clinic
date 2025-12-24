@@ -2,6 +2,7 @@ package com.example.backend.repository;
 
 import com.example.backend.dto.PatientAppointmentDto;
 import com.example.backend.entity.Appointment;
+import com.example.backend.entity.AppointmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
@@ -180,5 +182,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                                  @Param("today") LocalDate today,
                                                  @Param("q") String q,
                                                  Pageable pageable);
+    boolean existsByPatientProfileId(Long patientProfileId);
+
+    long countByPatientProfileIdAndStatusIn(Long patientProfileId, Collection<AppointmentStatus> statuses);
+
+    @Query("""
+           select count(a) from Appointment a
+           where a.patientProfileId = :profileId
+             and a.status in :statuses
+             and a.appointmentDate >= :fromDate
+           """)
+    long countUpcoming(
+            @Param("profileId") Long profileId,
+            @Param("statuses") Collection<AppointmentStatus> statuses,
+            @Param("fromDate") LocalDate fromDate
+    );
 }
 
