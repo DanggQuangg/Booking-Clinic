@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "../../lib/api";
 
 const TABS = [
-  { key: "UPCOMING", label: "Lịch hẹn khám" },
-  { key: "REGISTERED", label: "Đã đăng ký" },
+  { key: "UPCOMING", label: "Đã đăng kí/Lịch hẹn khám" },
+  { key: "REGISTERED", label: "Chưa thanh toán" },
   { key: "DONE", label: "Đã khám" },
 ];
 
