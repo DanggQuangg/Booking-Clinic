@@ -1,8 +1,5 @@
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-/**
- * Lấy token theo chuẩn cb_user (fallback key token cũ nếu còn)
- */
 function getToken() {
   const raw = localStorage.getItem("cb_user");
   if (raw) {
@@ -62,4 +59,8 @@ export function apiPut(path, body) {
 }
 export function apiDelete(path) {
   return apiFetch(path, { method: "DELETE" });
+}
+
+export function apiPatch(path, body) {
+  return apiFetch(path, { method: "PATCH", body });
 }
