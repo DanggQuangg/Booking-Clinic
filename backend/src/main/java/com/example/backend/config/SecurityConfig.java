@@ -31,14 +31,16 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                // ✅ Cho phép Chatbot và các API public truy cập không cần token
+                // Các API không cần đăng nhập
                 .requestMatchers(
                     "/api/auth/**", 
                     "/api/public/**", 
                     "/api/chatbot/**", 
-                    "/api/doctor/**" 
+                    "/api/doctor/**" // API public của bác sĩ (nếu có)
                 ).permitAll()
-                // Các request còn lại bắt buộc đăng nhập
+                // API dành riêng cho nội bộ Bác sĩ (cần Token + Role DOCTOR)
+                .requestMatchers("/api/doctor-internal/**").hasAuthority("DOCTOR")
+                // Tất cả các request khác phải có Token
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -51,23 +53,29 @@ public class SecurityConfig {
         return new PasswordEncoder() {
             @Override
             public String encode(CharSequence rawPassword) {
-                // Mặc định luôn mã hóa khi tạo qua Web (cho Bệnh nhân)
+                // Luôn mã hóa BCrypt cho người dùng mới đăng ký
                 return new BCryptPasswordEncoder().encode(rawPassword);
             }
 
             @Override
             public boolean matches(CharSequence rawPassword, String encodedPassword) {
-                // Nếu trong DB là mã hóa (Bệnh nhân) -> Dùng BCrypt check
-                if (encodedPassword != null && encodedPassword.startsWith("$2a$")) {
+                // 1. Xử lý trường hợp dữ liệu rác (fake hash) trong DB
+                if (encodedPassword.contains("dummy")) {
+                    // Nếu nhập 123456 hoặc nhập đúng chuỗi rác đó thì cho qua
+                    return "123456".equals(rawPassword.toString()) || encodedPassword.equals(rawPassword.toString());
+                }
+
+                // 2. Xử lý trường hợp mật khẩu Bệnh nhân (BCrypt chuẩn)
+                if (encodedPassword.startsWith("$2a$") && encodedPassword.length() == 60) {
                     return new BCryptPasswordEncoder().matches(rawPassword, encodedPassword);
                 }
-                // Nếu trong DB là chữ thường (Bác sĩ) -> So sánh y hệt
+
+                // 3. Xử lý trường hợp mật khẩu Bác sĩ (Plaintext / Văn bản thuần)
                 return rawPassword.toString().equals(encodedPassword);
             }
         };
     }
 
-    // ✅ Bổ sung AuthenticationManager (thường AuthService cũng cần cái này)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -76,7 +84,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // URL Frontend
+        // Cho phép Frontend truy cập (Cập nhật port nếu Frontend chạy port khác)
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
