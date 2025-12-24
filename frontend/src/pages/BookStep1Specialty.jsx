@@ -13,7 +13,7 @@ export default function BookStep1Specialty() {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch("http://localhost:8080/api/public/specialties");
+        const res = await fetch("http://localhost:8088/api/public/specialties");
         if (!res.ok) throw new Error("Không tải được danh sách chuyên khoa.");
         const data = await res.json();
         setSpecialties(Array.isArray(data) ? data : []);

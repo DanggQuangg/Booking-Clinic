@@ -1,10 +1,22 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function RequireAuth({ children }) {
-  const { user } = useAuth();
-  const location = useLocation();
+function normalizeRole(r) {
+  if (!r) return undefined;
+  return String(r).replace("ROLE_", "").toUpperCase();
+}
 
-  if (!user) return <Navigate to="/" replace state={{ from: location.pathname }} />;
-  return children;
+export default function RequireAuth({ allowedRoles, children }) {
+  const { user } = useAuth();
+
+  if (!user) return <Navigate to="/" replace />;
+
+  const role = normalizeRole(user.role);
+
+  if (allowedRoles) {
+    const allowed = allowedRoles.map(normalizeRole);
+    if (!allowed.includes(role)) return <Navigate to="/" replace />;
+  }
+
+  return children ? children : <Outlet />;
 }
