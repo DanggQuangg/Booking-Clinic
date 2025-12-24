@@ -14,13 +14,14 @@ import InvoicePage from "./pages/InvoicePage";
 import DoctorsPage from "./pages/DoctorsPage";
 import DoctorDetailPage from "./pages/DoctorDetailPage";
 import PricingPage from "./pages/PricingPage";
+import ServicesPage from "./pages/ServicesPage";
+import ServiceBookingPage from "./pages/ServiceBookingPage";
 
 // 1. Import Chatbot vào đây (đảm bảo đường dẫn đúng với nơi bạn tạo file Chatbot.jsx)
 import Chatbot from "./components/Chatbot"; 
 
 export default function App() {
   return (
-    // 2. Bọc toàn bộ lại bằng thẻ div hoặc Fragment (<>...</>)
     <div className="app-container">
       
       {/* Phần điều hướng trang chính */}
@@ -36,6 +37,9 @@ export default function App() {
         <Route path="/book/step4" element={<BookStep4ProfileConfirm />} />
         <Route path="/book/invoice" element={<InvoicePage />} />
         <Route path="/pricing" element={<PricingPage />} />
+
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/:id" element={<ServiceBookingPage />} />
         {/* Account area */}
         <Route
           path="/account"
@@ -59,5 +63,6 @@ export default function App() {
       <Chatbot />
       
     </div>
+    
   );
 }

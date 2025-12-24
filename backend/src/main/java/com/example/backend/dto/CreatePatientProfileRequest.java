@@ -2,12 +2,21 @@ package com.example.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
 public record CreatePatientProfileRequest(
-        @NotBlank @Size(max = 100) String fullName,
+        @NotBlank @Size(max = 120) String fullName,
         @Size(max = 20) String phone,
         LocalDate dob,
-        String gender,      // "MALE"/"FEMALE"/"OTHER"
+
+        // "MALE"/"FEMALE"/"OTHER"
+        String gender,
+
+        @Size(max = 30) String healthInsuranceCode,
+        @Size(max = 20) String citizenId,
+        @Size(max = 255) String address,
+        @Size(max = 60) String ethnicity,
+
         Boolean isDefault
 ) {}
