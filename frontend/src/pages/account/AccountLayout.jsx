@@ -12,7 +12,7 @@ import Header from "../../components/Header";
 
 const items = [
   { label: "Lịch khám", to: "/account/appointments", icon: CalendarDays },
-  { label: "Lịch sử thanh toán", to: "/account/payments", icon: CreditCard },
+  { label: "Lịch sử mua dịch vụ", to: "/account/payments", icon: CreditCard },
   { label: "Hồ sơ", to: "/account/profile", icon: FileText },
   { label: "Tài khoản", to: "/account/settings", icon: Settings },
 ];

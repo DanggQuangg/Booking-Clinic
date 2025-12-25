@@ -3,6 +3,33 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { servicesApi } from "../api/servicesApi";
 
+/** ✅ Helper: bắt cả Axios + Fetch wrapper (message kiểu "HTTP 403") */
+function getErrMsg(e) {
+  // 1) Axios style
+  const status1 = e?.response?.status;
+
+  // 2) Some wrappers put status directly
+  const status2 = e?.status || e?.statusCode;
+
+  // 3) Parse from message: "HTTP 403", "status code 403", ...
+  const msgText = String(e?.message || "");
+  const m = msgText.match(/\b(401|403)\b/); // lấy 401/403 nếu có
+  const status3 = m ? Number(m[1]) : null;
+
+  const status = status1 || status2 || status3;
+
+  if (status === 401 || status === 403) {
+    return "Hãy đăng nhập để tiếp tục.";
+  }
+
+  // Backend message (nếu có)
+  const backendMsg = e?.response?.data?.message;
+  if (backendMsg) return backendMsg;
+
+  // Fallback
+  return msgText || "Không tải được danh sách dịch vụ";
+}
+
 export default function ServicesPage() {
   const navigate = useNavigate();
 
@@ -28,7 +55,7 @@ export default function ServicesPage() {
         setServices(list);
       } catch (e) {
         if (!mounted) return;
-        setErr(e?.message || "Không tải được danh sách dịch vụ");
+        setErr(getErrMsg(e));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -107,7 +134,7 @@ export default function ServicesPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filtered.map((s) => {
-                const requiresBooking = true; // luôn true
+                const requiresBooking = true;
                 const status = s?.status;
 
                 return (

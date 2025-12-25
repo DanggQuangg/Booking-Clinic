@@ -302,7 +302,7 @@ export default function ServiceBookingPage() {
                   <input
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Ví dụ: nhịn ăn trước khi xét nghiệm…"
+                    placeholder="Nhịn ăn trước khi xét nghiệm"
                     className="mt-2 w-full rounded-xl border px-3 py-2 font-semibold"
                   />
                 </div>

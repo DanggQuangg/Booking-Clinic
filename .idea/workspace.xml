@@ -6,22 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b6cccd9e-8356-4055-9306-17953b191f6c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/controller/PatientMedicalRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/controller/PatientMedicalRecordController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/controller/ServiceBookingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/controller/ServiceBookingController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/AppointmentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/AppointmentRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/ClinicRoomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/ClinicRoomRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/DoctorWorkShiftRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/repository/DoctorWorkShiftRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/DoctorService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/backend/service/DoctorService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/doctorApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/doctorApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/layouts/DoctorLayout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/layouts/DoctorLayout.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BookStep4ProfileConfirm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BookStep4ProfileConfirm.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/doctor/Doctor.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/doctor/Doctor.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/doctor/DoctorDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/doctor/DoctorDashboard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/doctor/DoctorShiftPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/doctor/DoctorShiftPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ServiceBookingPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ServiceBookingPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ServicesPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ServicesPage.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,6 +99,7 @@
       <workItem from="1766559393942" duration="9167000" />
       <workItem from="1766638106572" duration="1220000" />
       <workItem from="1766660915675" duration="14162000" />
+      <workItem from="1766687808559" duration="946000" />
     </task>
     <servers />
   </component>
