@@ -42,7 +42,6 @@ public class PatientMedicalRecordController {
         Appointment appt = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment không tồn tại"));
 
-        // ✅ Chặn xem trộm: appointment phải thuộc user này
         if (appt.getPatientUser() == null || appt.getPatientUser().getId() == null
                 || !appt.getPatientUser().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Không có quyền xem bệnh án");

@@ -20,7 +20,7 @@ public class ServiceBookingController {
     @PostMapping
     public ServiceBookingCreateResponse create(@Valid @RequestBody ServiceBookingCreateRequest req,
                                                Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal(); // ✅ principal = userId từ JwtAuthFilter
+        Long userId = (Long) authentication.getPrincipal();
         return bookingService.create(userId, req);
     }
 }

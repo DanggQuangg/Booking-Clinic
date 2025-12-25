@@ -14,11 +14,8 @@ import {
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
 
-const GUIDE_ITEMS = [
-  { label: "Cách đặt lịch", to: "/guide/booking" },
-  { label: "Chuẩn bị trước khi khám", to: "/guide/before-visit" },
-  { label: "Câu hỏi thường gặp", to: "/guide/faq" },
-];
+// ✅ Hướng dẫn giờ chỉ còn là 1 nút => chuyển trang /guide
+// (Không còn GUIDE_ITEMS dropdown nữa)
 
 const NAV = [
   { label: "Danh sách bác sĩ", to: "/doctors" },
@@ -57,9 +54,9 @@ export default function Header() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // dropdown guide
-  const [guideOpen, setGuideOpen] = useState(false);
-  const guideRef = useRef(null);
+  // ✅ remove guide dropdown state/ref
+  // const [guideOpen, setGuideOpen] = useState(false);
+  // const guideRef = useRef(null);
 
   // dropdown medical services
   const [medicalOpen, setMedicalOpen] = useState(false);
@@ -76,14 +73,16 @@ export default function Header() {
   // close dropdowns on outside click + ESC
   useEffect(() => {
     const onMouseDown = (e) => {
-      if (guideRef.current && !guideRef.current.contains(e.target)) setGuideOpen(false);
+      // ✅ remove guide outside click
+      // if (guideRef.current && !guideRef.current.contains(e.target)) setGuideOpen(false);
       if (medicalRef.current && !medicalRef.current.contains(e.target)) setMedicalOpen(false);
       if (userRef.current && !userRef.current.contains(e.target)) setUserOpen(false);
     };
 
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
-        setGuideOpen(false);
+        // ✅ remove guide
+        // setGuideOpen(false);
         setMedicalOpen(false);
         setUserOpen(false);
         setMobileOpen(false);
@@ -100,7 +99,8 @@ export default function Header() {
 
   // auto-close dropdowns when route changes
   useEffect(() => {
-    setGuideOpen(false);
+    // ✅ remove guide
+    // setGuideOpen(false);
     setMedicalOpen(false);
     setUserOpen(false);
     setMobileOpen(false);
@@ -128,6 +128,12 @@ export default function Header() {
   const isMedicalActive = useMemo(() => {
     const p = location.pathname || "/";
     return p === "/book" || p.startsWith("/book/") || p === "/services" || p.startsWith("/services/");
+  }, [location.pathname]);
+
+  // ✅ optional: active state cho /guide
+  const isGuideActive = useMemo(() => {
+    const p = location.pathname || "/";
+    return p === "/guide" || p.startsWith("/guide/");
   }, [location.pathname]);
 
   // ===== Theme classes (đồng bộ) =====
@@ -277,48 +283,14 @@ export default function Header() {
       <div className="bg-white/70">
         <div className="mx-auto max-w-6xl px-4">
           <div className="hidden md:flex items-center gap-2 h-14">
-            {/* guide dropdown */}
-            <div className="relative" ref={guideRef}>
-              <button
-                onClick={() => setGuideOpen((v) => !v)}
-                className={`${linkBase} inline-flex items-center gap-1 ${guideOpen ? linkActive : ""}`}
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded={guideOpen}
-              >
-                Hướng dẫn
-                <ChevronDown className={`h-4 w-4 transition ${guideOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence>
-                {guideOpen && (
-                  <motion.div
-                    variants={pop}
-                    initial="hidden"
-                    animate="show"
-                    exit="exit"
-                    className={`absolute left-0 top-full mt-2 w-72 ${dropdownPanel}`}
-                  >
-                    <div className="p-2">
-                      <div className="px-3 pt-2 pb-1 text-xs font-bold text-slate-500">TÀI LIỆU</div>
-                      {GUIDE_ITEMS.map((it) => (
-                        <NavLink
-                          key={it.to}
-                          to={it.to}
-                          className={({ isActive }) =>
-                            isActive
-                              ? "block rounded-xl px-3 py-2 text-sm font-semibold text-sky-700 bg-sky-50"
-                              : "block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                          }
-                        >
-                          {it.label}
-                        </NavLink>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* ✅ Hướng dẫn: chỉ còn nút link (không dropdown) */}
+            <button
+              type="button"
+              onClick={() => navigate("/guide")}
+              className={`${linkBase} ${isGuideActive ? linkActive : ""}`}
+            >
+              Hướng dẫn
+            </button>
 
             {/* medical dropdown */}
             <div className="relative" ref={medicalRef}>
@@ -489,40 +461,16 @@ export default function Header() {
                     </div>
                   )}
 
-                  {/* guide (mobile) */}
+                  {/* ✅ Hướng dẫn (mobile): chỉ còn 1 nút */}
                   <button
-                    onClick={() => setGuideOpen((v) => !v)}
+                    onClick={() => navigate("/guide")}
                     className={`w-full flex items-center justify-between rounded-xl px-3 py-2 font-extrabold ${
-                      guideOpen ? "bg-sky-50 text-sky-700" : "text-slate-900 hover:bg-slate-50"
+                      isGuideActive ? "bg-sky-50 text-sky-700" : "text-slate-900 hover:bg-slate-50"
                     }`}
                     type="button"
                   >
                     <span>Hướng dẫn</span>
-                    <ChevronDown className={`h-4 w-4 transition ${guideOpen ? "rotate-180" : ""}`} />
                   </button>
-
-                  <AnimatePresence>
-                    {guideOpen && (
-                      <motion.div
-                        variants={pop}
-                        initial="hidden"
-                        animate="show"
-                        exit="exit"
-                        className="ml-3 border-l border-slate-200 pl-3"
-                      >
-                        {GUIDE_ITEMS.map((it) => (
-                          <NavLink
-                            key={it.to}
-                            to={it.to}
-                            className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                            onClick={() => setGuideOpen(false)}
-                          >
-                            {it.label}
-                          </NavLink>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
                   {/* medical (mobile) */}
                   <button

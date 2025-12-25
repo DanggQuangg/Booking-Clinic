@@ -217,10 +217,10 @@ public class DoctorService {
             if (req.getWorkDate().isBefore(LocalDate.now())) throw new RuntimeException("Không thể đăng ký ca trong quá khứ");
             if (req.getShift() == null) throw new RuntimeException("Thiếu shift");
 
-            ShiftType shiftType = ShiftType.valueOf(req.getShift());
+            ShiftType shiftType = ShiftType.valueOf(req.getShift().trim().toUpperCase());
 
             // chống trùng ca cùng ngày
-            if (workShiftRepository.existsByDoctorIdAndWorkDateAndShift(doctorId, req.getWorkDate(), shiftType)) {
+            if (workShiftRepository.existsByDoctor_IdAndWorkDateAndShift(doctorId, req.getWorkDate(), shiftType)) {
                 continue; // hoặc throw nếu mày muốn
             }
 

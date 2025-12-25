@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import doctorApi from "../api/doctorApi";
 import "../pages/doctor/Doctor.css";
@@ -14,89 +14,107 @@ const DoctorLayout = () => {
     specialization: "",
   });
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchInfo = async () => {
-        try {
+      try {
         const res = await doctorApi.getDashboardInfo();
         // res là object trực tiếp từ backend, KHÔNG DÙNG res.data
         if (res) {
-            setDoctorInfo({
-            name: res.fullName || 'Bác sĩ',
-            type: res.employmentType
-            });
+          setDoctorInfo({
+            name: res.fullName || "Bác sĩ",
+            type: res.employmentType || "",
+            specialization: res.specialization || "Chuyên khoa tổng quát",
+          });
         }
-        } catch (err) {
-        console.error("Lỗi:", err);
-        }
+      } catch (err) {
+        console.error("Lỗi fetch info:", err);
+        setDoctorInfo((prev) => ({ ...prev, name: "Bác sĩ" }));
+      }
     };
     fetchInfo();
-    }, []);
+  }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = "/";
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+      localStorage.clear();
+      window.location.href = "/";
+    }
   };
+
+  const getInitial = (name) => {
+    if (!name || name === "Đang tải...") return "BS";
+    const parts = String(name).trim().split(/\s+/);
+    return (parts[parts.length - 1]?.charAt(0) || "B").toUpperCase();
+  };
+
+  // ✅ Normalize employmentType để không bị sai format
+  const normalizedType = (doctorInfo.type || "")
+    .toString()
+    .trim()
+    .toUpperCase()
+    .replace("-", "_"); // PART-TIME -> PART_TIME
+
+  const isPartTime = normalizedType === "PART_TIME";
+  const isFullTime = normalizedType === "FULL_TIME";
+
+  const typeLabel = isPartTime ? "Part-Time" : isFullTime ? "Full-Time" : "Doctor";
+
+  const activeKey = useMemo(() => {
+    const path = location.pathname;
+    if (path.includes("/doctor/profile")) return "PROFILE";
+    if (path.includes("/doctor/schedule")) return "SCHEDULE";
+    return "DASHBOARD";
+  }, [location.pathname]);
 
   return (
     <div className="doctor-container">
-      {/* Sidebar bên trái */}
-      <div className="doctor-sidebar">
-        <div className="doctor-profile">
-          <div className="avatar-circle">BS</div>
-          <div className="doctor-name">{doctorInfo.name}</div>
+      <aside className="doctor-sidebar">
+        <div className="sidebar-profile">
+          <div className="avatar-wrapper">{getInitial(doctorInfo.name)}</div>
 
-          {/* Hiển thị Chuyên khoa bác sĩ */}
-          <div
-            className="doctor-spec"
-            style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: "500", marginTop: "4px" }}
-          >
-            {doctorInfo.specialization}
-          </div>
+          {/* ✅ Không cố định chữ “Bác sĩ” nữa */}
+          <span className="doctor-name">{doctorInfo.name}</span>
+          <span className="doctor-spec">{doctorInfo.specialization}</span>
 
-          {/* Badge Loại hình công việc */}
-          <span className="badge-role" style={{ marginTop: "8px", display: "inline-block" }}>
-            {doctorInfo.type === "PART_TIME"
-              ? "Bác sĩ Part-Time"
-              : "Bác sĩ Full-Time"}
-          </span>
+          <span className="badge-role">{typeLabel}</span>
         </div>
 
-        <nav>
+        <nav className="sidebar-menu">
           <button
-            className={`nav-btn ${
-              location.pathname.includes("dashboard") ? "active" : ""
-            }`}
+            className={`menu-item ${activeKey === "DASHBOARD" ? "active" : ""}`}
             onClick={() => navigate("/doctor/dashboard")}
           >
-            🩺 Khám bệnh
+            <span className="menu-icon">🩺</span> Khám bệnh
           </button>
 
-          {/* Chỉ hiển thị nút Đăng ký lịch cho bác sĩ PART_TIME */}
-          {doctorInfo.type === "PART_TIME" && (
+          {/* ✅ OPTION A: chỉ hiện khi đúng PART_TIME (đã normalize) */}
+          {isPartTime && (
             <button
-              className={`nav-btn ${
-                location.pathname.includes("schedule") ? "active" : ""
-              }`}
+              className={`menu-item ${activeKey === "SCHEDULE" ? "active" : ""}`}
               onClick={() => navigate("/doctor/schedule")}
             >
-              📅 Đăng ký lịch
+              <span className="menu-icon">📅</span> Đăng kí lịch khám
             </button>
           )}
 
           <button
-            className="nav-btn logout-btn"
-            onClick={handleLogout}
-            style={{ marginTop: "auto" }}
+            className={`menu-item ${activeKey === "PROFILE" ? "active" : ""}`}
+            onClick={() => navigate("/doctor/profile")}
           >
-            Đăng xuất
+            <span className="menu-icon">👤</span> Hồ sơ bác sĩ
           </button>
         </nav>
-      </div>
 
-      {/* Nội dung trang Dashboard bên phải */}
-      <div className="doctor-content">
+        <div className="sidebar-footer">
+          <button className="logout-btn-modern" onClick={handleLogout}>
+            <span>🚪</span> Đăng xuất
+          </button>
+        </div>
+      </aside>
+
+      <main className="doctor-content">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };

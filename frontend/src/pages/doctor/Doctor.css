@@ -1,49 +1,746 @@
-/* Layout chung */
-.doctor-container { display: flex; height: 100vh; background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-.doctor-sidebar { width: 260px; background: #ffffff; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-.doctor-content { flex: 1; padding: 25px; overflow-y: auto; }
+/* ============================================================
+   1. LAYOUT CHUNG & FONT
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* Sidebar */
-.doctor-profile { text-align: center; margin-bottom: 40px; }
-.avatar-circle { width: 80px; height: 80px; background: #e3f2fd; color: #1976d2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 10px; font-weight: bold; }
-.doctor-name { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 5px; }
-.badge-role { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
-.nav-btn { display: block; width: 100%; padding: 14px; text-align: left; background: none; border: none; cursor: pointer; border-radius: 8px; margin-bottom: 8px; color: #555; font-size: 1rem; transition: 0.2s; }
-.nav-btn:hover { background: #f5f5f5; color: #000; }
-.nav-btn.active { background: #e3f2fd; color: #1976d2; font-weight: 600; }
-.logout-btn { margin-top: auto; background: #ffebee; color: #c62828; }
+.doctor-container {
+    display: flex;
+    height: 100vh;
+    background: #f8fafc;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #1e293b;
+}
 
-/* Dashboard Khám Bệnh */
-.dashboard-wrapper { display: flex; gap: 20px; height: calc(100vh - 50px); }
-.queue-panel { width: 320px; background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.queue-list { flex: 1; overflow-y: auto; margin-top: 10px; }
-.queue-item { padding: 15px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; }
-.queue-item:hover { border-color: #2196f3; background: #fafdff; }
-.queue-item.active { border-color: #2196f3; background: #e3f2fd; border-left: 4px solid #2196f3; }
-.q-time { font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px; }
-.q-name { font-weight: bold; color: #333; display: block; }
-.q-status { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; float: right; }
-.q-status.CONFIRMED { background: #e8f5e9; color: #2e7d32; }
-.q-status.AWAITING_PAYMENT { background: #fff3cd; color: #856404; }
+.doctor-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
 
-/* Form Khám */
-.exam-panel { flex: 1; background: white; border-radius: 12px; padding: 25px; overflow-y: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.patient-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-.patient-header h2 { margin: 0 0 5px; color: #1976d2; }
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
-.form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-.form-control:focus { border-color: #2196f3; outline: none; }
-.med-row { display: flex; gap: 10px; margin-bottom: 15px; }
-.btn-add { background: #4caf50; color: white; border: none; width: 50px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
-.med-list li { display: flex; justify-content: space-between; padding: 10px; background: #f9f9f9; border-radius: 6px; margin-bottom: 8px; }
-.btn-remove { color: #f44336; cursor: pointer; font-weight: bold; }
-.btn-submit { width: 100%; padding: 14px; background: #1976d2; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-.btn-submit:hover { background: #1565c0; }
+/* ============================================================
+   2. SIDEBAR (THANH BÊN TRÁI) - ĐÃ CẢI TIẾN PROFILE
+   ============================================================ */
+.doctor-sidebar {
+    width: 280px;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.02);
+    z-index: 10;
+}
 
-/* Shift Page */
-.shift-wrapper { background: white; padding: 30px; border-radius: 12px; max-width: 800px; margin: 0 auto; }
-.shift-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-.shift-table th, .shift-table td { padding: 15px; border: 1px solid #eee; text-align: center; }
-.shift-table th { background: #f5f5f5; }
-.check-input { width: 20px; height: 20px; cursor: pointer; }
+/* Khung Profile Bác sĩ */
+.sidebar-profile {
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
+    background: linear-gradient(to bottom, #f8fafc, #ffffff);
+}
+
+.avatar-wrapper {
+    width: 68px;
+    height: 68px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    border: 3px solid #ffffff;
+}
+
+.doctor-name {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.doctor-spec {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 10px;
+    display: block;
+    font-weight: 500;
+}
+
+.badge-role {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Menu điều hướng */
+.sidebar-menu {
+    flex: 1;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.menu-item:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.menu-item.active {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.menu-icon { font-size: 1.2rem; }
+
+/* Footer & Đăng xuất */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.logout-btn-modern {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #ffe4e6;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.logout-btn-modern:hover {
+    background: #e11d48;
+    color: white;
+}
+
+/* ============================================================
+   3. DASHBOARD KHÁM BỆNH (QUEUE & EXAM PANEL)
+   ============================================================ */
+.dashboard-wrapper {
+    display: flex;
+    gap: 24px;
+    height: calc(100vh - 48px);
+}
+
+.queue-panel {
+    width: 350px;
+    background: white;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.queue-header {
+    padding: 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.queue-header h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.15rem;
+    color: #0f172a;
+}
+
+/* Tabs trong Queue */
+.tab-container {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 7px;
+    color: #64748b;
+    transition: 0.2s;
+    font-size: 0.9rem;
+}
+
+.tab-btn.active {
+    background: white;
+    color: #2563eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+/* Queue Items */
+.queue-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.queue-item {
+    padding: 16px;
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.queue-item:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+.queue-item.active {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    box-shadow: inset 4px 0 0 #3b82f6;
+}
+
+.q-time {
+    font-size: 0.8rem;
+    color: #3b82f6;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.q-name {
+    display: block;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 4px 0;
+    color: #1e293b;
+}
+
+.q-status {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.q-status.CONFIRMED { background: #dcfce7; color: #166534; }
+.q-status.AWAITING_PAYMENT { background: #fef9c3; color: #854d0e; }
+.q-status.DONE { background: #f1f5f9; color: #475569; }
+
+/* Exam Panel (Bên phải) */
+.exam-panel {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.patient-header {
+    background: #f8fafc;
+    margin: -30px -30px 25px -30px;
+    padding: 25px 30px;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 16px 16px 0 0;
+}
+
+.patient-header h2 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.6rem;
+    font-weight: 800;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 18px;
+    display: block;
+    font-weight: 800;
+    border-left: 4px solid #3b82f6;
+    padding-left: 10px;
+}
+
+/* Form Controls */
+.form-group { margin-bottom: 25px; }
+
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: 0.2s;
+    background: #fcfdfe;
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    background: #fff;
+}
+
+/* ============================================================
+   4. THUỐC & TÁI KHÁM
+   ============================================================ */
+.med-row {
+    display: flex;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px dashed #cbd5e1;
+}
+
+.btn-add {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.btn-add:hover { background: #0f172a; }
+
+.med-list { list-style: none; padding: 0; }
+
+.med-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+/* ============================================================
+   5. SHIFT PAGE (ĐĂNG KÝ LỊCH)
+   ============================================================ */
+.shift-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.shift-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 35px;
+}
+
+.shift-card-grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.shift-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    transition: 0.3s;
+}
+
+.shift-row:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.day-label {
+    font-weight: 800;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.day-sub {
+    display: block;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* Custom Checkbox Card */
+.shift-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.shift-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.shift-box {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border: 2px solid #f1f5f9;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: 0.2s all;
+    text-align: center;
+}
+
+.shift-option:hover .shift-box { border-color: #cbd5e1; }
+
+.shift-option input:checked ~ .shift-box {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+}
+
+.shift-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.shift-option input:checked ~ .shift-box .shift-title { color: #2563eb; }
+
+.shift-time {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ============================================================
+   6. CÁC LOẠI NÚT (BUTTONS)
+   ============================================================ */
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+.btn-outline {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #475569;
+    transition: 0.2s;
+}
+
+.btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+.btn-success {
+    background: #10b981;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 18px;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: 0.3s;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.btn-success:hover { 
+    background: #059669; 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* ============================================================
+   7. DOCTOR PROFILE PAGE
+   ============================================================ */
+.doc-profile-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+
+.doc-profile-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.doc-profile-head {
+  padding: 22px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(to bottom, #f8fafc, #ffffff);
+}
+
+.doc-profile-head h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.doc-profile-head p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.doc-profile-loading {
+  padding: 24px;
+  color: #64748b;
+}
+
+.doc-profile-error {
+  margin: 18px 24px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff1f2;
+  border: 1px solid #ffe4e6;
+  color: #be123c;
+  font-weight: 700;
+}
+
+.doc-profile-grid {
+  padding: 22px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.doc-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.doc-profile-actions {
+  padding: 0 24px 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+/* ====== MY SHIFTS (LỊCH ĐÃ ĐĂNG KÝ) ====== */
+.my-shifts-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.my-shifts-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.my-shifts-title {
+  font-weight: 900;
+  color: #0f172a;
+  font-size: 1.05rem;
+}
+
+.my-shifts-sub {
+  margin-top: 6px;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.my-shifts-loading {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.my-shifts-empty {
+  padding: 14px 6px 4px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.my-shifts-body {
+  padding-top: 12px;
+  display: grid;
+  gap: 14px;
+}
+
+.my-shifts-dayhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.my-shifts-date {
+  font-weight: 900;
+  color: #1e293b;
+}
+
+.my-shifts-items {
+  display: grid;
+  gap: 10px;
+}
+
+.my-shifts-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #f1f5f9;
+  border-radius: 14px;
+  background: #fcfdff;
+}
+
+.my-shifts-shift {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #0f172a;
+}
+
+.my-shifts-time {
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.my-shifts-meta {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.shift-room {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.shift-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  border: 1px solid transparent;
+}
+
+.shift-badge.registered { background: #eff6ff; color: #2563eb; border-color: #dbeafe; }
+.shift-badge.approved   { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.shift-badge.cancelled  { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+.btn-danger {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #ffe4e6;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+.btn-danger:hover {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+/* disable ca đã đăng ký */
+.shift-option.is-disabled {
+  cursor: not-allowed;
+}
+.shift-option.is-disabled .shift-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  opacity: 0.9;
+}
+
+.shift-mini-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  background: #e2e8f0;
+  color: #475569;
+}
+.btn-danger.is-disabled,
+.btn-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

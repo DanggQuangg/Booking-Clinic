@@ -14,10 +14,21 @@ const doctorApi = {
     saveMedicalRecord: (data) => {
         return apiPost('/api/doctor/medical-records', data);
     },
+    updateProfile(payload) {
+        return apiPut("/api/doctor/profile", payload);
+    },
+
     // Đăng ký lịch làm việc
     registerShifts: (shifts) => {
-        return apiPost('/api/doctor/register-shift', shifts);
-    }
+        return apiPost('/api/doctor-internal/shifts/register', shifts);
+    },
+    getMyShifts: ({ from, to }) =>
+    apiGet(`/api/doctor-internal/shifts/my?from=${from}&to=${to}`),
+
+  // ✅ Hủy 1 lịch trực (set CANCELLED)
+  cancelShift: (shiftId) =>
+    apiPost(`/api/doctor-internal/shifts/${shiftId}/cancel`, {})
+
 };
 
 export default doctorApi;

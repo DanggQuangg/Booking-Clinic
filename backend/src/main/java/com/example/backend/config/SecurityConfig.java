@@ -49,7 +49,7 @@ public class SecurityConfig {
                         ).authenticated()
 
                         // 3) API nội bộ bác sĩ (cần Role/Authority DOCTOR)
-                        .requestMatchers("/api/doctor-internal/**").hasAuthority("DOCTOR")
+                        .requestMatchers("/api/doctor-internal/**").hasAuthority("ROLE_DOCTOR")
 
                         // 4) Còn lại: yêu cầu xác thực
                         .anyRequest().authenticated()

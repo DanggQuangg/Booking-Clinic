@@ -219,6 +219,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         ORDER BY s.startTime ASC
     """)
     List<Appointment> findDoctorQueue(@Param("doctorId") Long doctorId, @Param("today") LocalDate today);
-    
+    boolean existsBySlot_WorkShift_Id(Long workShiftId);
 }
 

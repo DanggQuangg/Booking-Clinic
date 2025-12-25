@@ -23,7 +23,7 @@ import ServiceBookingPage from "./pages/ServiceBookingPage";
 import DoctorLayout from "./layouts/DoctorLayout";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorShiftPage from "./pages/doctor/DoctorShiftPage";
-
+import DoctorProfilePage from "./pages/doctor/DoctorProfilePage";
 // Chatbot (đảm bảo đúng path file của bạn)
 import Chatbot from "./components/Chatbot";
 
@@ -31,6 +31,7 @@ export default function App() {
   return (
     <div className="app-container">
       <Routes>
+        {/* Home */}
         <Route path="/" element={<Home />} />
 
         {/* Public */}
@@ -47,19 +48,36 @@ export default function App() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/services/:id" element={<ServiceBookingPage />} />
 
-        {/* DOCTOR (protected) */}
+        {/* =========================
+            DOCTOR (protected)
+           ========================= */}
         <Route element={<RequireAuth allowedRoles={["DOCTOR"]} />}>
           <Route path="/doctor" element={<DoctorLayout />}>
+            {/* /doctor -> /doctor/dashboard */}
             <Route index element={<Navigate to="dashboard" replace />} />
+
+            {/* /doctor/dashboard */}
             <Route path="dashboard" element={<DoctorDashboard />} />
+
+            {/* ✅ /doctor/schedule */}
             <Route path="schedule" element={<DoctorShiftPage />} />
+
+            <Route path="profile" element={<DoctorProfilePage />} /> {/* ✅ thêm dòng này */}
+
+
+            {/* ✅ Alias thêm: /doctor/shifts -> /doctor/schedule (tuỳ chọn nhưng rất tiện) */}
+            <Route path="shifts" element={<Navigate to="../doctor/schedule" replace />} />
           </Route>
         </Route>
 
-        {/* PATIENT (protected) */}
+        {/* =========================
+            PATIENT (protected)
+           ========================= */}
         <Route element={<RequireAuth allowedRoles={["PATIENT"]} />}>
           <Route path="/account" element={<AccountLayout />}>
+            {/* /account -> /account/appointments */}
             <Route index element={<Navigate to="appointments" replace />} />
+
             <Route path="appointments" element={<AppointmentsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="profile" element={<ProfilePage />} />

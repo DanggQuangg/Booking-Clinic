@@ -75,7 +75,15 @@ function Pill({ icon, children }) {
   );
 }
 
-function Field({ label, value, onChange, placeholder, type = "text", icon, disabled }) {
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  icon,
+  disabled,
+}) {
   return (
     <label className="block">
       <div className="text-sm font-semibold text-slate-700 mb-1">{label}</div>
@@ -101,6 +109,23 @@ function Field({ label, value, onChange, placeholder, type = "text", icon, disab
       </div>
     </label>
   );
+}
+
+/** ✅ Helper: map 401/403 => "Hãy đăng nhập..." */
+function getErrMsg(e) {
+  const status = e?.response?.status;
+
+  // Chưa đăng nhập / token hết hạn / bị chặn bởi security
+  if (status === 401 || status === 403) {
+    return "Hãy đăng nhập để tiếp tục.";
+  }
+
+  // Backend trả message
+  const msg = e?.response?.data?.message;
+  if (msg) return msg;
+
+  // fallback
+  return e?.message || "Lỗi không xác định";
 }
 
 export default function BookStep4ProfileConfirm() {
@@ -160,7 +185,7 @@ export default function BookStep4ProfileConfirm() {
         setError("");
         await loadProfiles();
       } catch (e) {
-        setError(e?.response?.data?.message || e?.message || "Lỗi không xác định");
+        setError(getErrMsg(e));
       } finally {
         setLoading(false);
       }
@@ -195,7 +220,7 @@ export default function BookStep4ProfileConfirm() {
       const data = res.data;
       navigate(`/book/invoice?appointmentId=${data.appointmentId}`);
     } catch (e) {
-      setError(e?.response?.data?.message || e?.message || "Lỗi không xác định");
+      setError(getErrMsg(e));
     } finally {
       setSubmitting(false);
     }
@@ -249,7 +274,7 @@ export default function BookStep4ProfileConfirm() {
 
       setShowCreate(false);
     } catch (e) {
-      setCreateErr(e?.response?.data?.message || e?.message || "Lỗi không xác định");
+      setCreateErr(getErrMsg(e));
     } finally {
       setCreating(false);
     }
@@ -404,7 +429,9 @@ export default function BookStep4ProfileConfirm() {
 
                           <div className="text-slate-600 text-sm mt-1">
                             CCCD: <b className="text-slate-800">{p.citizenId || "—"}</b> • BHYT:{" "}
-                            <b className="text-slate-800">{p.healthInsuranceCode || "—"}</b>
+                            <b className="text-slate-800">
+                              {p.healthInsuranceCode || "—"}
+                            </b>
                           </div>
 
                           <div className="text-slate-600 text-sm mt-1">
@@ -575,7 +602,9 @@ export default function BookStep4ProfileConfirm() {
                         />
 
                         <label className="block">
-                          <div className="text-sm font-semibold text-slate-700 mb-1">Giới tính</div>
+                          <div className="text-sm font-semibold text-slate-700 mb-1">
+                            Giới tính
+                          </div>
                           <select
                             value={form.gender}
                             onChange={(e) => setForm({ ...form, gender: e.target.value })}

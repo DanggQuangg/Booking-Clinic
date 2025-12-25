@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface DoctorWorkShiftRepository extends JpaRepository<DoctorWorkShift, Long> {
-    boolean existsByDoctorIdAndWorkDateAndShift(Long doctorId, LocalDate workDate, ShiftType shift);
+    boolean existsByDoctor_IdAndWorkDateAndShift(Long doctorId, LocalDate workDate, ShiftType shift);
     
     @Query("""
         select ws
